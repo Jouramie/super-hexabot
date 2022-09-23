@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "super-hexabot"
+version = "0.1.0"
+description = ""
+authors = ["jouramie <jouramie@hotmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+PyAutoGUI = "^0.9.53"
+mss = "^6.1.0"
+opencv-python = "~4.5.5"
+Pillow = "^9.1.0"
+PyQt6 = "^6.2.3"
+frozendict = "^2.3.1"
+pytesseract = "^0.3.9"
+plotext = "^5.0.2"
+console = "^0.9907"
+
+[tool.poetry.dev-dependencies]
+black = "^22.3.0"
+pytest = "^7.1.1"
+pytest-mock = "^3.7.0"
+
+[tool.black]
+line-length = 160
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
