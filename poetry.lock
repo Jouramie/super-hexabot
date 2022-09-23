@@ -2268,6 +2268,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "pywin32"
+version = "304"
+description = "Python for Window Extensions"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "rubicon-objc"
 version = "0.4.2"
 description = "A bridge between an Objective C runtime environment and Python."
@@ -2286,7 +2294,7 @@ python-versions = ">=3.7"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "53238c0311a19c2bbc107256cff4bb62a19d7683f466988a989d0aec4bb00380"
+content-hash = "160fbd892b1a89838014c9065a565c9378f9224f0e9a1d0ebf78eb5d59a4b9dd"
 
 [metadata.files]
 ansicon = [
@@ -2529,6 +2537,7 @@ python3-xlib = [
 pytweening = [
     {file = "pytweening-1.0.4.tar.gz", hash = "sha256:8533282cf70b31de8a0499e1cf420930b0013c787118872b2ec899382792e2e6"},
 ]
+pywin32 = []
 rubicon-objc = [
     {file = "rubicon-objc-0.4.2.tar.gz", hash = "sha256:6fbc8e12bd66c84427cfb95634c4bd10ade356ae2b2ae0d2b51dcbf5810d2602"},
     {file = "rubicon_objc-0.4.2-py3-none-any.whl", hash = "sha256:c8780b9d6c3c906642080a9f8b710f5823a498c17e9bbea7f70781ea6ede7962"},

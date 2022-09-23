@@ -15,6 +15,7 @@ frozendict = "^2.3.1"
 pytesseract = "^0.3.9"
 plotext = "^5.0.2"
 console = "^0.9907"
+pywin32 = "^304"
 
 [tool.poetry.dev-dependencies]
 black = "^22.3.0"
