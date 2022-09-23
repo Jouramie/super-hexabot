@@ -15,6 +15,7 @@ def loop():
     """
 
     sensor.capture()
+    sensor.detect_player()
 
 
 if __name__ == "__main__":

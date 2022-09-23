@@ -1,8 +1,11 @@
 import logging
 import os
+from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+import cv2
+import numpy as np
 import pyautogui
 import pyscreeze
 import win32gui
@@ -14,7 +17,17 @@ logger = logging.getLogger(__name__)
 
 
 _game_position: pyscreeze.Box | None = None
-_game: Image | None = None
+_image: Image | None = None
+
+
+@dataclass(frozen=True)
+class ColorBoundary:
+    color: str
+    lower_bound: np.array
+    upper_bound: np.array
+
+
+color_boundary = ColorBoundary("red", np.array([0, 150, 160]), np.array([255, 255, 255]))
 
 
 def find_window_region(title) -> pyscreeze.Box | None:
@@ -63,15 +76,15 @@ def capture() -> None:
     Take a screenshot of the game region and cache it.
     :return:
     """
-    global _game
+    global _image
     if _game_position is None or _game_position.left < 0:
         logger.info(f"Sensor requires calibration. Game located at {_game_position}")
         return None
 
-    _game = pyautogui.screenshot(region=_game_position)
-    logger.debug(f"Screenshot size is {_game.size}.")
+    _image = pyautogui.screenshot(region=_game_position)
+    logger.debug(f"Screenshot size is {_image.size}.")
     if properties.SCREENSHOT_LOGGING_ENABLED:
-        log_screenshot(_game)
+        log_screenshot(_image)
 
 
 def detect_player() -> float:
@@ -79,7 +92,28 @@ def detect_player() -> float:
     Find player orientation.
     :return: The orientation of the player between -1 and 1 where 0 is up.
     """
-    pass
+    global _image
+
+    image = np.array(_image)
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+
+    mask = cv2.inRange(hsv, color_boundary.lower_bound, color_boundary.upper_bound)
+
+    cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+
+    image_number = 0
+    for c in cnts:
+        area = cv2.contourArea(c)
+        if properties.PLAYER_MIN_SIZE <= area < properties.PLAYER_MAX_SIZE:
+            print(area)
+            x, y, w, h = cv2.boundingRect(c)
+            cv2.rectangle(mask, (x, y), (x + w, y + h), (127, 127, 127), 1)
+            image_number += 1
+
+    print(f"Found {image_number} that could be player")
+
+    return 0
 
 
 def detect_obstacle_distances():

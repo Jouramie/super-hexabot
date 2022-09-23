@@ -4,6 +4,8 @@ from dataclasses import dataclass
 import cv2
 import numpy as np
 
+import properties
+
 for filename in os.listdir("../../target"):
     file_path = f"target/{filename}"
     try:
@@ -28,7 +30,7 @@ class ColorBoundary:
 color_boundary = ColorBoundary("red", np.array([0, 150, 160]), np.array([255, 255, 255]))
 
 
-def searching_obstacles(__image_name: str):
+def searching_obstacles(__image_name: str, verbose=False):
     print(f"Searching obstacles in {__image_name}.")
 
     # Load image, grayscale, median blur, sharpen image
@@ -36,30 +38,33 @@ def searching_obstacles(__image_name: str):
         top_left_corner[0] : bottom_right_corner[0], top_left_corner[1] : bottom_right_corner[1]
     ]
 
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    player_cut = image[
+        properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2], properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3]
+    ]
+    hsv = cv2.cvtColor(player_cut, cv2.COLOR_BGR2HSV)
 
     mask = cv2.inRange(hsv, color_boundary.lower_bound, color_boundary.upper_bound)
+    if verbose:
+        print(cv2.imwrite(f"../../target/mask.png", mask))
 
-    cnts = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-    min_area = 20
-    max_area = 80
     image_number = 0
     for c in cnts:
+        approx = cv2.approxPolyDP(c, 0.07 * cv2.arcLength(c, True), True)
         area = cv2.contourArea(c)
-        if min_area <= area < max_area:
-            print(area)
-            x, y, w, h = cv2.boundingRect(c)
-            cv2.rectangle(mask, (x, y), (x + w, y + h), (127, 127, 127), 1)
+        if len(approx) == 3 and properties.PLAYER_MIN_SIZE < area < properties.PLAYER_MAX_SIZE:
+            cv2.drawContours(image, [c + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]], 0, (255, 0, 255), 1)
             image_number += 1
 
-    cv2.imwrite(f"../../target/{images_directory}/{__image_name}", mask)
+    print(f"Found {image_number}")
+    cv2.imwrite(f"../../target/{images_directory}/{__image_name}", image)
 
 
 os.makedirs(f"../../target/{images_directory}", exist_ok=True)
 
-# searching_obstacles("Image-025.png")
+# searching_obstacles("Image-221.png", True)
 
 for __image_name in os.listdir(f"../resources/{images_directory}"):
     searching_obstacles(__image_name)
