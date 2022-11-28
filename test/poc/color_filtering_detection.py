@@ -1,3 +1,4 @@
+import math
 import os
 from dataclasses import dataclass
 
@@ -38,16 +39,16 @@ def searching_obstacles(__image_name: str, verbose=False):
         top_left_corner[0] : bottom_right_corner[0], top_left_corner[1] : bottom_right_corner[1]
     ]
 
-    player_cut = image[
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    mask = cv2.inRange(hsv, color_boundary.lower_bound, color_boundary.upper_bound)
+
+    mark_player_cut = mask[
         properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2], properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3]
     ]
-    hsv = cv2.cvtColor(player_cut, cv2.COLOR_BGR2HSV)
-
-    mask = cv2.inRange(hsv, color_boundary.lower_bound, color_boundary.upper_bound)
     if verbose:
         print(cv2.imwrite(f"../../target/mask.png", mask))
 
-    cnts = cv2.findContours(mask, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cv2.findContours(mark_player_cut, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
     image_number = 0
@@ -57,6 +58,27 @@ def searching_obstacles(__image_name: str, verbose=False):
         if len(approx) == 3 and properties.PLAYER_MIN_SIZE < area < properties.PLAYER_MAX_SIZE:
             cv2.drawContours(image, [c + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]], 0, (255, 0, 255), 1)
             image_number += 1
+
+    center = np.array(properties.EXPECTED_CENTER)
+    for ray in range(properties.RAY_AMOUNT):
+        position = center
+        for i in range(properties.RAY_START_ITERATION, properties.RAY_MAX_ITERATION):
+            position = center + np.int_(
+                np.array(
+                    [
+                        i * properties.RAY_PIXEL_SKIP * math.cos(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                        i * properties.RAY_PIXEL_SKIP * math.sin(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                    ]
+                )
+            )
+
+            if mask.shape[0] < position[0] or mask.shape[1] < position[1]:
+                break
+
+            if mask[position[0], position[1]] == 255:
+                break
+
+        cv2.line(image, np.flip(center), np.flip(position), (255, 0, 255))
 
     print(f"Found {image_number}")
     cv2.imwrite(f"../../target/{images_directory}/{__image_name}", image)
