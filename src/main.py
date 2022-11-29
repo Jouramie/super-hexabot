@@ -3,7 +3,10 @@ from pathlib import Path
 
 import properties
 from core import sensor, brain, motor
+from core.sensor import NoPlayerFoundException
 from util.profiling import timeit
+
+_detections_without_finding_player = 0
 
 
 @timeit(name="loop", print_each_call=True)
@@ -14,9 +17,17 @@ def loop():
     3. Send rotation to motor
     :return:
     """
+    global _detections_without_finding_player
 
     sensor.capture()
-    position = sensor.detect_player()
+    try:
+        position = sensor.detect_player()
+        _detections_without_finding_player = 0
+    except NoPlayerFoundException as e:
+        _detections_without_finding_player += 1
+        if _detections_without_finding_player > 3:
+            raise e
+        return
     available_distances = sensor.detect_available_distances()
     direction = brain.choose_direction(position, available_distances)
     motor.turn(direction)

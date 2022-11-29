@@ -20,7 +20,7 @@ class Test(TestCase):
     # @skip
     def test_manual(self, screenshot):
         properties.SENSOR_LOG_DISTANCES = True
-        screenshot.return_value = Image.open("resources/2022-11-28T213847.339421.tiff")
+        screenshot.return_value = Image.open("../logs/2022-11-29T005417.525807.tiff")
 
         sensor.capture()
 

@@ -99,6 +99,7 @@ def log_screenshot(screenshot: Image | np.ndarray, name=None):
     if isinstance(screenshot, np.ndarray):
         screenshot = PIL.Image.fromarray(screenshot)
 
+    logger.info(f"Logging image {name}.")
     screenshot.save(Path(f"{properties.LOGS_PATH}/{name}"))
 
     saved_screenshots = os.listdir(properties.LOGS_PATH)

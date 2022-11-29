@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 
@@ -5,11 +6,16 @@ import keyboard
 
 import properties
 
+logger = logging.getLogger(__name__)
+
 _lock = threading.Lock()
 _thread: None | threading.Thread = None
 _running = True
 
 _destination = 0
+_destination_timestamp = 0
+
+_progress = 0
 _last_direction: None | str = None
 
 
@@ -18,8 +24,11 @@ def turn(rotation: float):
     positive is right, negative is left
     """
     global _destination
+    global _destination_timestamp
     with _lock:
+        logger.info(f"Setting rotation to {rotation}")
         _destination = rotation
+        _destination_timestamp = time.time_ns()
 
 
 def start():
@@ -47,7 +56,11 @@ def loop():
     """
     global _last_direction
     global _destination
+    global _destination_timestamp
     rotation = _destination
+    current_destination_timestamp = _destination_timestamp
+
+    logger.info(f"Destination is {rotation}")
 
     new_direction = None
     if rotation < -properties.MOTOR_MIN_ROTATION:
@@ -63,17 +76,25 @@ def loop():
         if new_direction is not None:
             keyboard.press(new_direction)
 
+    logger.info(f"Turning {new_direction} for {rotation}.")
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED
     if time_to_sleep > properties.MOTOR_MAX_SLEEP or time_to_sleep == 0:
         time_to_sleep = properties.MOTOR_MAX_SLEEP
 
     ts = time.time_ns()
     time.sleep(time_to_sleep)
+
+    if new_direction is None:
+        return
+
     te = time.time_ns()
     delta = (te - ts) / 1e9
     if new_direction == "left":
         delta = -delta
 
-    turn(rotation - delta * properties.MOTOR_SPEED)
+    logger.info(f"Actually turned for {delta}.")
+    if current_destination_timestamp == _destination_timestamp:
+        with _lock:
+            _destination = rotation - delta * properties.MOTOR_SPEED
 
     _last_direction = new_direction
