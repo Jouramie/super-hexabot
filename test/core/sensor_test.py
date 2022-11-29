@@ -9,6 +9,7 @@ from core import sensor
 
 properties.LOGS_PATH = "../logs"
 properties.SCREENSHOT_LOGGING_ENABLED = False
+properties.RAY_MAX_ITERATION = 50
 
 
 class TestDetection(TestCase):

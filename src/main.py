@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from core import sensor
+from core import sensor, brain
 from util.profiling import timeit
 
 
@@ -15,7 +15,9 @@ def loop():
     """
 
     sensor.capture()
-    sensor.detect_player()
+    position = sensor.detect_player()
+    map = sensor.detect_obstacle_distances()
+    direction = brain.choose_direction(position, map)
 
 
 if __name__ == "__main__":
