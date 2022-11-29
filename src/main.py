@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 
+import properties
 from core import sensor, brain, motor
 from util.profiling import timeit
 
@@ -31,6 +32,9 @@ if __name__ == "__main__":
 
     sensor.calibrate()
     input("press a key when the game is started")
-
-    while True:
-        loop()
+    try:
+        motor.start()
+        while properties.MOVEMENT_ENABLED:
+            loop()
+    finally:
+        motor.stop()

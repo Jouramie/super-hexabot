@@ -9,7 +9,8 @@ from core import sensor
 
 properties.LOGS_PATH = "../logs"
 properties.SCREENSHOT_LOGGING_ENABLED = False
-properties.RAY_MAX_ITERATION = 50
+properties.SENSOR_RAY_MAX_ITERATION = 50
+properties.SENSOR_RAY_AMOUNT = 24
 
 
 class TestDetection(TestCase):
@@ -58,14 +59,14 @@ class TestDetection(TestCase):
 
     @patch("pyautogui.screenshot")
     def test_detect_obstacles_without_blur(self, screenshot):
-        properties.RAY_APPLY_BLUR = False
+        properties.SENSOR_APPLY_BLUR = False
         screenshot.return_value = Image.open("resources/session-yellow-red/Image-047.png").crop((10, 56, 777, 535))
 
         sensor.capture()
 
         obstacles = sensor.detect_available_distances()
 
-        self.assertEqual(len(obstacles), properties.RAY_AMOUNT)
+        self.assertEqual(len(obstacles), properties.SENSOR_RAY_AMOUNT)
         self.assertAlmostEqual(obstacles[0], 240, delta=10)
         self.assertAlmostEqual(obstacles[1], 249, delta=10)
         self.assertAlmostEqual(obstacles[2], 245, delta=10)

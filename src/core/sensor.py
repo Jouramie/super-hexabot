@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+import PIL
 import cv2
 import numpy as np
 import pyautogui
@@ -15,7 +16,8 @@ import properties
 
 logger = logging.getLogger(__name__)
 
-CONVOLUTION_MATRIX = np.array([0.2] * 5)
+BLUR_SIZE = int(properties.SENSOR_RAY_AMOUNT / properties.SENSOR_BLUR_RATIO)
+CONVOLUTION_MATRIX = np.array([1 / BLUR_SIZE] * BLUR_SIZE)
 
 _game_position: pyscreeze.Box | None = None
 _image: Image | None = None
@@ -91,8 +93,13 @@ def capture() -> None:
         log_screenshot(_image)
 
 
-def log_screenshot(screenshot: Image):
-    screenshot.save(Path(f"{properties.LOGS_PATH}/{datetime.now().replace().isoformat().replace(':', '')}.tiff"))
+def log_screenshot(screenshot: Image | np.ndarray, name=None):
+    if name is None:
+        name = f"{datetime.now().replace().isoformat().replace(':', '')}.tiff"
+    if isinstance(screenshot, np.ndarray):
+        screenshot = PIL.Image.fromarray(screenshot)
+
+    screenshot.save(Path(f"{properties.LOGS_PATH}/{name}"))
 
     saved_screenshots = os.listdir(properties.LOGS_PATH)
 
@@ -161,14 +168,14 @@ def detect_available_distances() -> list[int]:
 
     distances = []
     center = np.array(properties.EXPECTED_CENTER)
-    for ray in range(properties.RAY_AMOUNT):
+    for ray in range(properties.SENSOR_RAY_AMOUNT):
         position = center
-        for i in range(properties.RAY_START_ITERATION, properties.RAY_MAX_ITERATION):
+        for i in range(properties.SENSOR_RAY_START_ITERATION, properties.SENSOR_RAY_MAX_ITERATION):
             position = center + np.int_(
                 np.array(
                     [
-                        i * properties.RAY_PIXEL_SKIP * np.cos(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
-                        -i * properties.RAY_PIXEL_SKIP * np.sin(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                        i * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                        -i * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
                     ]
                 )
             )
@@ -181,11 +188,27 @@ def detect_available_distances() -> list[int]:
 
         distances.append(int(np.linalg.norm(position - center)))
 
-    if properties.RAY_APPLY_BLUR:
+    if properties.SENSOR_APPLY_BLUR:
         padding = len(CONVOLUTION_MATRIX) - 1
         array_with_padding = np.array(distances[-padding:] + distances + distances[:padding])
         convolve = np.convolve(array_with_padding, CONVOLUTION_MATRIX, "same")
         distances = list(np.int_(convolve))[padding:-padding]
+
+    if properties.SENSOR_LOG_DISTANCES:
+        image = np.array(_image)
+        for ray, d in enumerate(distances):
+            ray_end = center + np.int_(
+                np.array(
+                    [
+                        d * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                        -d * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                    ]
+                )
+            )
+
+            cv2.line(image, np.flip(center), np.flip(ray_end), (255, 0, 255))
+
+        log_screenshot(image, name=properties.SCREENSHOT_LOGGING_NAME)
 
     return distances
 

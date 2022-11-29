@@ -59,14 +59,14 @@ def searching_obstacles(__image_name: str, verbose=False):
             image_number += 1
 
     center = np.array(properties.EXPECTED_CENTER)
-    for ray in range(properties.RAY_AMOUNT):
+    for ray in range(properties.SENSOR_RAY_AMOUNT):
         position = center
-        for i in range(properties.RAY_START_ITERATION, properties.RAY_MAX_ITERATION):
+        for i in range(properties.SENSOR_RAY_START_ITERATION, properties.SENSOR_RAY_MAX_ITERATION):
             position = center + np.int_(
                 np.array(
                     [
-                        i * properties.RAY_PIXEL_SKIP * np.cos(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
-                        -i * properties.RAY_PIXEL_SKIP * np.sin(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                        i * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(np.deg2rad(ray / properties.SENSOR_RAY_AMOUNT * 360)),
+                        -i * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(np.deg2rad(ray / properties.SENSOR_RAY_AMOUNT * 360)),
                     ]
                 )
             )
