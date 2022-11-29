@@ -1,4 +1,3 @@
-import math
 import os
 from dataclasses import dataclass
 
@@ -66,8 +65,8 @@ def searching_obstacles(__image_name: str, verbose=False):
             position = center + np.int_(
                 np.array(
                     [
-                        i * properties.RAY_PIXEL_SKIP * math.cos(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
-                        i * properties.RAY_PIXEL_SKIP * math.sin(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                        i * properties.RAY_PIXEL_SKIP * np.cos(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                        -i * properties.RAY_PIXEL_SKIP * np.sin(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
                     ]
                 )
             )
@@ -80,13 +79,16 @@ def searching_obstacles(__image_name: str, verbose=False):
 
         cv2.line(image, np.flip(center), np.flip(position), (255, 0, 255))
 
+        if ray == 16:
+            break
+
     print(f"Found {image_number}")
     cv2.imwrite(f"../../target/{images_directory}/{__image_name}", image)
 
 
 os.makedirs(f"../../target/{images_directory}", exist_ok=True)
 
-# searching_obstacles("Image-221.png", True)
+searching_obstacles("Image-221.png", True)
 
-for __image_name in os.listdir(f"../resources/{images_directory}"):
-    searching_obstacles(__image_name)
+# for __image_name in os.listdir(f"../resources/{images_directory}"):
+#    searching_obstacles(__image_name)

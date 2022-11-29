@@ -115,6 +115,8 @@ def detect_player() -> float:
     if _mask is None:
         apply_mask()
 
+    assert isinstance(_mask, np.ndarray)
+
     mark_player_cut = _mask[
         properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2], properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3]
     ]
@@ -142,15 +144,43 @@ def detect_player() -> float:
 
     from_center = pos[0] - properties.EXPECTED_CENTER
     angle = np.angle(from_center[0] + from_center[1] * 1j) / np.pi
-    return 1 - angle if angle > 0 else -(1 + angle)
+    return 1 - angle if angle > 0 else -1 - angle
 
 
-def detect_obstacle_distances():
+def detect_obstacle_distances() -> list[int]:
     """
     Shoot rays in equally split directions
-    :return:
+    :return: A list of the available space in different directions, starting from the bottom, going clockwise.
     """
-    pass
+    global _mask
+    if _mask is None:
+        apply_mask()
+
+    assert isinstance(_mask, np.ndarray)
+
+    distances = []
+    center = np.array(properties.EXPECTED_CENTER)
+    for ray in range(properties.RAY_AMOUNT):
+        position = center
+        for i in range(properties.RAY_START_ITERATION, properties.RAY_MAX_ITERATION):
+            position = center + np.int_(
+                np.array(
+                    [
+                        i * properties.RAY_PIXEL_SKIP * np.cos(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                        -i * properties.RAY_PIXEL_SKIP * np.sin(np.deg2rad(ray / properties.RAY_AMOUNT * 360)),
+                    ]
+                )
+            )
+
+            if _mask.shape[0] < position[0] or _mask.shape[1] < position[1]:
+                break
+
+            if _mask[position[0], position[1]] == 255:
+                break
+
+        distances.append(int(np.linalg.norm(position - center)))
+
+    return distances
 
 
 def apply_mask():

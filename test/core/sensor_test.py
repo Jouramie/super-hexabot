@@ -11,7 +11,7 @@ properties.LOGS_PATH = "../logs"
 properties.SCREENSHOT_LOGGING_ENABLED = False
 
 
-class TestPlayerDetection(TestCase):
+class TestDetection(TestCase):
     def setUp(self) -> None:
         sensor._game_position = Box(10, 56, 777 - 10, 535 - 56)
 
@@ -54,3 +54,37 @@ class TestPlayerDetection(TestCase):
         player = sensor.detect_player()
 
         self.assertAlmostEqual(player, -0.53, delta=0.05)
+
+    @patch("pyautogui.screenshot")
+    def test_detect_obstacles(self, screenshot):
+        screenshot.return_value = Image.open("resources/session-yellow-red/Image-047.png").crop((10, 56, 777, 535))
+
+        sensor.capture()
+
+        obstacles = sensor.detect_obstacle_distances()
+
+        self.assertEqual(len(obstacles), properties.RAY_AMOUNT)
+        self.assertAlmostEqual(obstacles[0], 240, delta=10)
+        self.assertAlmostEqual(obstacles[1], 249, delta=10)
+        self.assertAlmostEqual(obstacles[2], 245, delta=10)
+        self.assertAlmostEqual(obstacles[3], 82, delta=10)
+        self.assertAlmostEqual(obstacles[4], 77, delta=10)
+        self.assertAlmostEqual(obstacles[5], 80, delta=10)
+        self.assertAlmostEqual(obstacles[6], 80, delta=10)
+        self.assertAlmostEqual(obstacles[7], 243, delta=10)
+        self.assertAlmostEqual(obstacles[8], 218, delta=10)
+        self.assertAlmostEqual(obstacles[9], 204, delta=10)
+        self.assertAlmostEqual(obstacles[10], 212, delta=10)
+        self.assertAlmostEqual(obstacles[11], 73, delta=10)
+        self.assertAlmostEqual(obstacles[12], 75, delta=10)
+        self.assertAlmostEqual(obstacles[13], 72, delta=10)
+        self.assertAlmostEqual(obstacles[14], 75, delta=10)
+        self.assertAlmostEqual(obstacles[15], 247, delta=10)
+        self.assertAlmostEqual(obstacles[16], 246, delta=10)
+        self.assertAlmostEqual(obstacles[17], 250, delta=10)
+        self.assertAlmostEqual(obstacles[18], 245, delta=10)
+        self.assertAlmostEqual(obstacles[19], 80, delta=10)
+        self.assertAlmostEqual(obstacles[20], 73, delta=10)
+        self.assertAlmostEqual(obstacles[21], 72, delta=10)
+        self.assertAlmostEqual(obstacles[22], 82, delta=10)
+        self.assertAlmostEqual(obstacles[23], 248, delta=10)
