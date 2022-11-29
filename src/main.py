@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 
-from core import sensor, brain
+from core import sensor, brain, motor
 from util.profiling import timeit
 
 
@@ -14,10 +14,13 @@ def loop():
     :return:
     """
 
+    input("press a key when the game is started")
+
     sensor.capture()
     position = sensor.detect_player()
-    map = sensor.detect_obstacle_distances()
-    direction = brain.choose_direction(position, map)
+    available_distances = sensor.detect_available_distances()
+    direction = brain.choose_direction(position, available_distances)
+    motor.turn(direction)
 
 
 if __name__ == "__main__":

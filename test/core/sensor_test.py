@@ -62,7 +62,7 @@ class TestDetection(TestCase):
 
         sensor.capture()
 
-        obstacles = sensor.detect_obstacle_distances()
+        obstacles = sensor.detect_available_distances()
 
         self.assertEqual(len(obstacles), properties.RAY_AMOUNT)
         self.assertAlmostEqual(obstacles[0], 240, delta=10)

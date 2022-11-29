@@ -147,7 +147,7 @@ def detect_player() -> float:
     return 1 - angle if angle > 0 else -1 - angle
 
 
-def detect_obstacle_distances() -> list[int]:
+def detect_available_distances() -> list[int]:
     """
     Shoot rays in equally split directions
     :return: A list of the available space in different directions, starting from the bottom, going clockwise.
