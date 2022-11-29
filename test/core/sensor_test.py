@@ -57,7 +57,8 @@ class TestDetection(TestCase):
         self.assertAlmostEqual(player, -0.53, delta=0.05)
 
     @patch("pyautogui.screenshot")
-    def test_detect_obstacles(self, screenshot):
+    def test_detect_obstacles_without_blur(self, screenshot):
+        properties.RAY_APPLY_BLUR = False
         screenshot.return_value = Image.open("resources/session-yellow-red/Image-047.png").crop((10, 56, 777, 535))
 
         sensor.capture()

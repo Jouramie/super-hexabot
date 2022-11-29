@@ -15,6 +15,7 @@ import properties
 
 logger = logging.getLogger(__name__)
 
+CONVOLUTION_MATRIX = np.array([0.2] * 5)
 
 _game_position: pyscreeze.Box | None = None
 _image: Image | None = None
@@ -179,6 +180,12 @@ def detect_available_distances() -> list[int]:
                 break
 
         distances.append(int(np.linalg.norm(position - center)))
+
+    if properties.RAY_APPLY_BLUR:
+        padding = len(CONVOLUTION_MATRIX) - 1
+        array_with_padding = np.array(distances[-padding:] + distances + distances[:padding])
+        convolve = np.convolve(array_with_padding, CONVOLUTION_MATRIX, "same")
+        distances = list(np.int_(convolve))[padding:-padding]
 
     return distances
 

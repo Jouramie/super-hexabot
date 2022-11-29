@@ -1,11 +1,8 @@
 import keyboard
-import win32com.client as comclt
 
 import properties
 
 _last_direction: None | str = None
-
-wsh = comclt.Dispatch("WScript.Shell")
 
 
 def turn(rotation: float):
