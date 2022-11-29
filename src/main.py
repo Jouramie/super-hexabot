@@ -14,8 +14,6 @@ def loop():
     :return:
     """
 
-    input("press a key when the game is started")
-
     sensor.capture()
     position = sensor.detect_player()
     available_distances = sensor.detect_available_distances()
@@ -32,6 +30,7 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     sensor.calibrate()
+    input("press a key when the game is started")
 
     while True:
         loop()
