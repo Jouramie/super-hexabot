@@ -40,6 +40,10 @@ def start():
             loop()
 
     _thread = threading.Thread(target=run)
+
+    keyboard.press("space")
+    time.sleep(0.01)
+    keyboard.release("space")
     _thread.start()
 
 
@@ -60,8 +64,6 @@ def loop():
     rotation = _destination
     current_destination_timestamp = _destination_timestamp
 
-    logger.info(f"Destination is {rotation}")
-
     new_direction = None
     if rotation < -properties.MOTOR_MIN_ROTATION:
         new_direction = "left"
@@ -69,12 +71,12 @@ def loop():
     if rotation > properties.MOTOR_MIN_ROTATION:
         new_direction = "right"
 
-    if _last_direction != new_direction:
-        if _last_direction is not None:
-            keyboard.release(_last_direction)
+    keyboard.release("left")
+    keyboard.release("right")
 
-        if new_direction is not None:
-            keyboard.press(new_direction)
+    if new_direction is not None:
+        keyboard.press(new_direction)
+    _last_direction = new_direction
 
     logger.info(f"Turning {new_direction} for {rotation}.")
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED
@@ -88,13 +90,11 @@ def loop():
         return
 
     te = time.time_ns()
-    delta = (te - ts) / 1e9
+    delta = (te - ts) / 1e9 * properties.MOTOR_SPEED
     if new_direction == "left":
         delta = -delta
 
-    logger.info(f"Actually turned for {delta}.")
+    logger.info(f"Actually turned of {delta}.")
     if current_destination_timestamp == _destination_timestamp:
         with _lock:
-            _destination = rotation - delta * properties.MOTOR_SPEED
-
-    _last_direction = new_direction
+            _destination = rotation - delta

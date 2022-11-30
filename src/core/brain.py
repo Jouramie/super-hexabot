@@ -28,7 +28,7 @@ def choose_direction(position: float, available_distances: list[int]) -> float:
 
     possible_turns = [calculate_turn(position, to_circle_percent(i, obstacle_count)) for i in index_reaching_max]
     selected_turn = min(possible_turns, key=lambda x: abs(x))
-    logger.info(f"Available turns are {possible_turns}, selected {selected_turn}")
+    logger.info(f"Selected {selected_turn} from {possible_turns}")
 
     return selected_turn
 

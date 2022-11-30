@@ -7,7 +7,7 @@ from pyscreeze import Box
 import properties
 from core import sensor, brain
 
-properties.LOGS_PATH = "../logs"
+properties.LOGS_PATH = "../target"
 properties.SCREENSHOT_LOGGING_NAME = "test.tiff"
 properties.SCREENSHOT_LOGGING_ENABLED = False
 
@@ -20,7 +20,7 @@ class Test(TestCase):
     # @skip
     def test_manual(self, screenshot):
         properties.SENSOR_LOG_DISTANCES = True
-        screenshot.return_value = Image.open("../logs/2022-11-29T005417.525807.tiff")
+        screenshot.return_value = Image.open("../logs/2022-11-29T011650.934488.tiff")
 
         sensor.capture()
 

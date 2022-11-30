@@ -1,4 +1,5 @@
 import logging
+import time
 from pathlib import Path
 
 import properties
@@ -24,6 +25,7 @@ def loop():
         position = sensor.detect_player()
         _detections_without_finding_player = 0
     except NoPlayerFoundException as e:
+        logger.warning("I don't see the cursor !")
         _detections_without_finding_player += 1
         if _detections_without_finding_player > 3:
             raise e
@@ -42,7 +44,14 @@ if __name__ == "__main__":
     logger = logging.getLogger(__name__)
 
     sensor.calibrate()
-    input("press a key when the game is started")
+
+    print("Starting the bot in 3...")
+    time.sleep(1)
+    print("2...")
+    time.sleep(1)
+    print("1...")
+    time.sleep(1)
+    print("Start !")
     try:
         motor.start()
         while properties.MOVEMENT_ENABLED:
