@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -13,6 +14,8 @@ import win32gui
 from PIL.Image import Image
 
 import properties
+from core import brain
+from util.profiling import timeit
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +78,7 @@ def set_calibration(window: pyscreeze.Box) -> None:
     )
 
 
+@timeit(name="capture", print_each_call=True)
 def capture() -> None:
     """
     Take a screenshot of the game region and cache it.
@@ -220,3 +224,23 @@ def apply_mask():
     image = np.array(_image)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     _mask = cv2.inRange(hsv, color_boundary.lower_bound, color_boundary.upper_bound)
+
+
+def calculate_speed():
+    rs = None
+    while rs is None:
+        capture()
+        try:
+            rs = detect_player()
+        except NoPlayerFoundException as e:
+            pass
+    ts = time.time()
+    capture()
+    te = time.time()
+    re = detect_player()
+    dt = te - ts
+    dr = brain.calculate_turn(rs, re)
+
+    speed = dr / dt
+
+    print(f"Took {te} - {ts} = {dt} to capture. Moved from {re} to {re} = {dr}. This gives a speed of {speed}.")

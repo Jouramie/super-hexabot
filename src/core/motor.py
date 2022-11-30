@@ -36,13 +36,22 @@ def start():
 
     def run():
         global _running
+
+        keyboard.press("left")
+        time.sleep(0.5)
+        keyboard.release("left")
+        keyboard.press("right")
+        time.sleep(0.5)
+        keyboard.release("right")
+        time.sleep(0.2)
+
         while _running:
             loop()
 
     _thread = threading.Thread(target=run)
 
     keyboard.press("space")
-    time.sleep(0.01)
+    time.sleep(0.05)
     keyboard.release("space")
     _thread.start()
 

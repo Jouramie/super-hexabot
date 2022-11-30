@@ -54,6 +54,8 @@ if __name__ == "__main__":
     print("Start !")
     try:
         motor.start()
+
+        sensor.calculate_speed()
         while properties.MOVEMENT_ENABLED:
             loop()
     finally:
