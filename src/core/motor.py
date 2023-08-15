@@ -28,7 +28,7 @@ def turn(rotation: float):
     with _lock:
         logger.info(f"Setting rotation to {rotation}")
         _destination = rotation
-        _destination_timestamp = time.time_ns()
+        _destination_timestamp = time.perf_counter_ns()
 
 
 def start():
@@ -92,13 +92,13 @@ def loop():
     if time_to_sleep > properties.MOTOR_MAX_SLEEP or time_to_sleep == 0:
         time_to_sleep = properties.MOTOR_MAX_SLEEP
 
-    ts = time.time_ns()
+    ts = time.perf_counter_ns()
     time.sleep(time_to_sleep)
 
     if new_direction is None:
         return
 
-    te = time.time_ns()
+    te = time.perf_counter_ns()
     delta = (te - ts) / 1e9 * properties.MOTOR_SPEED
     if new_direction == "left":
         delta = -delta

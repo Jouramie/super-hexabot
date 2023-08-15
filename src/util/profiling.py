@@ -8,9 +8,9 @@ def timeit(method=None, name: str = None, print_each_call: bool = False):
     def timeit_decorator(method):
         def timed(*args, **kw):
             nonlocal name
-            ts = time.time_ns()
+            ts = time.perf_counter_ns()
             result = method(*args, **kw)
-            te = time.time_ns()
+            te = time.perf_counter_ns()
 
             if name is None:
                 name = kw.get("log_name", method.__name__.upper())

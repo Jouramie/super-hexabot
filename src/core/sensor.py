@@ -234,9 +234,9 @@ def calculate_speed():
             rs = detect_player()
         except NoPlayerFoundException as e:
             pass
-    ts = time.time()
+    ts = time.perf_counter()
     capture()
-    te = time.time()
+    te = time.perf_counter()
     re = detect_player()
     dt = te - ts
     dr = brain.calculate_turn(rs, re)
