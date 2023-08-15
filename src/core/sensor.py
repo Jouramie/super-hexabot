@@ -1,15 +1,16 @@
 import logging
 import os
 import time
+from collections import namedtuple
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
 import PIL
 import cv2
+import dxcam
 import numpy as np
 import pyautogui
-import pyscreeze
 import win32gui
 from PIL.Image import Image
 
@@ -22,9 +23,13 @@ logger = logging.getLogger(__name__)
 BLUR_SIZE = int(properties.SENSOR_RAY_AMOUNT / properties.SENSOR_BLUR_RATIO)
 CONVOLUTION_MATRIX = np.array([1 / BLUR_SIZE] * BLUR_SIZE)
 
-_game_position: pyscreeze.Box | None = None
+Region = namedtuple("Region", ["left", "top", "right", "bottom"])
+
+
+_game_position: Region | None = None
 _image: Image | None = None
 _mask: np.ndarray | None = None
+_camera: dxcam.DXCamera | None = None
 
 
 @dataclass(frozen=True)
@@ -46,12 +51,21 @@ def calibrate() -> None:
     Basically find the game window and save it.
     """
     global _game_position
-    window = find_window_region(properties.GAME_WINDOW_TITLE)
+    global _camera
+    window = find_window_region_on_left_screen(properties.GAME_WINDOW_TITLE)
     set_calibration(window)
     logger.info(f"Game located at {repr(_game_position)}.")
 
+    _camera = dxcam.create(output_idx=1)
+    _camera.start(_game_position)
 
-def find_window_region(title) -> pyscreeze.Box | None:
+
+def stop() -> None:
+    if _camera is not None:
+        _camera.release()
+
+
+def find_window_region_on_left_screen(title) -> Region | None:
     # activate_window(title)
 
     possible_game_windows = [window.title for window in pyautogui.getWindowsWithTitle(title)]
@@ -62,19 +76,25 @@ def find_window_region(title) -> pyscreeze.Box | None:
     try:
         window_handle = win32gui.FindWindow(None, actual_game_window)
         win_region = win32gui.GetWindowRect(window_handle)
+        logger.info(f"Raw window  {win_region}")
     except Exception as e:
         return None
 
-    return pyscreeze.Box(win_region[0], win_region[1], win_region[2] - win_region[0], win_region[3] - win_region[1])
+    return Region(
+        win_region[0] - properties.SCREEN_OFFSET[0],
+        win_region[1] - properties.SCREEN_OFFSET[1],
+        win_region[2] - properties.SCREEN_OFFSET[0],
+        win_region[3] - properties.SCREEN_OFFSET[1],
+    )
 
 
-def set_calibration(window: pyscreeze.Box) -> None:
+def set_calibration(window: Region) -> None:
     global _game_position
-    _game_position = pyscreeze.Box(
+    _game_position = Region(
         window.left + properties.GAME_WINDOW_WITHOUT_MARGIN[0],
         window.top + properties.GAME_WINDOW_WITHOUT_MARGIN[1],
-        properties.GAME_WINDOW_WITHOUT_MARGIN[2],
-        properties.GAME_WINDOW_WITHOUT_MARGIN[3],
+        window.left + properties.GAME_WINDOW_WITHOUT_MARGIN[2],
+        window.top + properties.GAME_WINDOW_WITHOUT_MARGIN[3],
     )
 
 
@@ -87,11 +107,14 @@ def capture() -> None:
     global _game_position
     global _image
 
-    if _game_position is None or _game_position.left < 0:
+    if _game_position is None:
         logger.info(f"Sensor requires calibration. Game located at {_game_position}")
         return
 
-    set_capture(pyautogui.screenshot(region=_game_position))
+    grab = _camera.get_latest_frame()
+    if grab is None:
+        return
+    set_capture(PIL.Image.fromarray(grab))
     logger.debug(f"Screenshot size is {_image.size}.")
     if properties.SCREENSHOT_LOGGING_ENABLED:
         log_screenshot(_image)
@@ -125,10 +148,12 @@ def detect_player() -> float:
     :return: The orientation of the player between -1 and 1 where 0 is up.
     """
     global _mask
+    # global _image
     if _mask is None:
         apply_mask()
 
     assert isinstance(_mask, np.ndarray)
+    # debug = np.array(_image)
 
     mark_player_cut = _mask[
         properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2], properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3]
@@ -142,6 +167,8 @@ def detect_player() -> float:
     for c in cnts:
         approx = cv2.approxPolyDP(c, 0.07 * cv2.arcLength(c, True), True)
         area = cv2.contourArea(c)
+        # cv2.drawContours(debug, [c + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]], 0, (255, 0, 255), 1)
+        # log_screenshot(debug)
         if len(approx) == 3 and properties.PLAYER_MIN_SIZE < area < properties.PLAYER_MAX_SIZE:
             image_number += 1
             moments = cv2.moments(approx)
@@ -185,7 +212,7 @@ def detect_available_distances() -> list[int]:
                 )
             )
 
-            if _mask.shape[0] < position[0] or _mask.shape[1] < position[1]:
+            if _mask.shape[0] <= position[0] or _mask.shape[1] <= position[1]:
                 break
 
             if _mask[position[0], position[1]] == 255:

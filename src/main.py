@@ -55,8 +55,10 @@ if __name__ == "__main__":
     try:
         motor.start()
 
+        time.sleep(1)
         sensor.calculate_speed()
         while properties.MOVEMENT_ENABLED:
             loop()
     finally:
+        sensor.stop()
         motor.stop()
