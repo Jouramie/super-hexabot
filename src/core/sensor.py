@@ -1,6 +1,5 @@
 import logging
 import os
-import time
 from collections import namedtuple
 from dataclasses import dataclass
 from datetime import datetime
@@ -15,7 +14,6 @@ import win32gui
 from PIL.Image import Image
 
 import properties
-from core import brain
 from util.profiling import timeit
 
 logger = logging.getLogger(__name__)
@@ -251,23 +249,3 @@ def apply_mask():
     image = np.array(_image)
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     _mask = cv2.inRange(hsv, color_boundary.lower_bound, color_boundary.upper_bound)
-
-
-def calculate_speed():
-    rs = None
-    while rs is None:
-        capture()
-        try:
-            rs = detect_player()
-        except NoPlayerFoundException as e:
-            pass
-    ts = time.perf_counter()
-    capture()
-    te = time.perf_counter()
-    re = detect_player()
-    dt = te - ts
-    dr = brain.calculate_turn(rs, re)
-
-    speed = dr / dt
-
-    print(f"Took {te} - {ts} = {dt} to capture. Moved from {re} to {re} = {dr}. This gives a speed of {speed}.")

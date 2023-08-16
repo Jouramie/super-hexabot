@@ -10,6 +10,26 @@ from util.profiling import timeit
 _detections_without_finding_player = 0
 
 
+def calculate_speed():
+    rs = None
+    while rs is None:
+        sensor.capture()
+        try:
+            rs = sensor.detect_player()
+        except NoPlayerFoundException as e:
+            pass
+    ts = time.perf_counter()
+    sensor.capture()
+    te = time.perf_counter()
+    re = sensor.detect_player()
+    dt = te - ts
+    dr = brain.calculate_turn(rs, re)
+
+    speed = dr / dt
+
+    print(f"Took {te} - {ts} = {dt} to capture. Moved from {re} to {re} = {dr}. This gives a speed of {speed}.")
+
+
 @timeit(name="loop", print_each_call=True)
 def loop():
     """
@@ -56,7 +76,7 @@ if __name__ == "__main__":
         motor.start()
 
         time.sleep(1)
-        sensor.calculate_speed()
+        calculate_speed()
         while properties.MOVEMENT_ENABLED:
             loop()
     finally:
