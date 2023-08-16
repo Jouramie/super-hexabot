@@ -54,6 +54,8 @@ def loop():
     direction = brain.choose_direction(position, available_distances)
     motor.turn(direction)
 
+    sensor.clear()
+
 
 if __name__ == "__main__":
     logs_folder = Path("logs")

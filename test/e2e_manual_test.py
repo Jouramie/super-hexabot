@@ -8,9 +8,9 @@ from pyscreeze import Box
 import properties
 from core import sensor, brain
 
-properties.LOGS_PATH = "target"
-properties.SCREENSHOT_LOGGING_NAME = "test.tiff"
-properties.SCREENSHOT_LOGGING_ENABLED = False
+properties.SCREENSHOT_LOGGER_LOGS_PATH = "target"
+properties.SCREENSHOT_LOGGER_IMAGE_NAME = "test.tiff"
+properties.SCREENSHOT_LOGGER_ENABLED = False
 
 
 class Test(TestCase):
@@ -19,9 +19,10 @@ class Test(TestCase):
 
     # @skip
     def test_manual(self):
-        properties.SENSOR_LOG_DISTANCES = True
+        properties.SCREENSHOT_LOGGER_TRANSFORMATION_ENABLED = True
+        properties.SCREENSHOT_LOGGER_IMAGE_NAME = "test.tiff"
         sensor._camera = MagicMock()
-        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-14T225211.514107.tiff"))
+        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-15T211527.729694.tiff"))
 
         sensor.capture()
 

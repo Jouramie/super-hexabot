@@ -7,8 +7,8 @@ from pyscreeze import Box
 import properties
 from core import sensor
 
-properties.LOGS_PATH = "../logs"
-properties.SCREENSHOT_LOGGING_ENABLED = False
+properties.SCREENSHOT_LOGGER_LOGS_PATH = "../logs"
+properties.SCREENSHOT_LOGGER_ENABLED = False
 properties.SENSOR_RAY_MAX_ITERATION = 50
 properties.SENSOR_RAY_AMOUNT = 24
 

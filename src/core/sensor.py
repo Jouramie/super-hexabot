@@ -1,19 +1,15 @@
 import logging
-import os
 from collections import namedtuple
 from dataclasses import dataclass
-from datetime import datetime
-from pathlib import Path
 
-import PIL
 import cv2
 import dxcam
 import numpy as np
 import pyautogui
 import win32gui
-from PIL.Image import Image
 
 import properties
+from util import img_logger
 from util.profiling import timeit
 
 logger = logging.getLogger(__name__)
@@ -25,7 +21,7 @@ Region = namedtuple("Region", ["left", "top", "right", "bottom"])
 
 
 _game_position: Region | None = None
-_image: Image | None = None
+_image: np.ndarray | None = None
 _mask: np.ndarray | None = None
 _camera: dxcam.DXCamera | None = None
 
@@ -112,28 +108,18 @@ def capture() -> None:
     grab = _camera.get_latest_frame()
     if grab is None:
         return
-    set_capture(PIL.Image.fromarray(grab))
+    set_capture(grab)
     logger.debug(f"Screenshot size is {_image.size}.")
-    if properties.SCREENSHOT_LOGGING_ENABLED:
-        log_screenshot(_image)
+    img_logger.submit(_image)
 
 
-def log_screenshot(screenshot: Image | np.ndarray, name=None):
-    if name is None:
-        name = f"{datetime.now().replace().isoformat().replace(':', '')}.tiff"
-    if isinstance(screenshot, np.ndarray):
-        screenshot = PIL.Image.fromarray(screenshot)
-
-    logger.info(f"Logging image {name}.")
-    screenshot.save(Path(f"{properties.LOGS_PATH}/{name}"))
-
-    saved_screenshots = os.listdir(properties.LOGS_PATH)
-
-    if len(saved_screenshots) > properties.SAVED_SCREENSHOT_QUANTITY:
-        os.remove(Path(f"{properties.LOGS_PATH}/{sorted(saved_screenshots)[0]}"))
+def clear() -> None:
+    global _image
+    img_logger.publish()
+    _image = None
 
 
-def set_capture(screenshot: Image):
+def set_capture(screenshot: np.ndarray):
     global _image
     global _mask
     _image = screenshot
@@ -165,7 +151,6 @@ def detect_player() -> float:
     for c in cnts:
         approx = cv2.approxPolyDP(c, 0.07 * cv2.arcLength(c, True), True)
         area = cv2.contourArea(c)
-        # cv2.drawContours(debug, [c + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]], 0, (255, 0, 255), 1)
         # log_screenshot(debug)
         if len(approx) == 3 and properties.PLAYER_MIN_SIZE < area < properties.PLAYER_MAX_SIZE:
             image_number += 1
@@ -173,6 +158,14 @@ def detect_player() -> float:
             cx = int(moments["m10"] / moments["m00"])
             cy = int(moments["m01"] / moments["m00"])
             pos.append(np.array([cy + properties.EXPECTED_PLAYER_AREA[0], cx + properties.EXPECTED_PLAYER_AREA[1]]))
+
+            def write_player(image: np.ndarray):
+                cv2.drawContours(
+                    image, [c + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]], 0, properties.SCREENSHOT_LOGGER_PLAYER_COLOR, 1
+                )
+                return image
+
+            img_logger.transform(write_player)
 
     if not pos:
         raise NoPlayerFoundException()
@@ -224,8 +217,7 @@ def detect_available_distances() -> list[int]:
         convolve = np.convolve(array_with_padding, CONVOLUTION_MATRIX, "same")
         distances = list(np.int_(convolve))[padding:-padding]
 
-    if properties.SENSOR_LOG_DISTANCES:
-        image = np.array(_image)
+    def write_rays(image: np.ndarray):
         for ray, d in enumerate(distances):
             ray_end = center + np.int_(
                 np.array(
@@ -236,9 +228,10 @@ def detect_available_distances() -> list[int]:
                 )
             )
 
-            cv2.line(image, np.flip(center), np.flip(ray_end), (255, 0, 255))
+            cv2.line(image, np.flip(center), np.flip(ray_end), properties.SCREENSHOT_LOGGER_RAYS_COLOR)
+        return image
 
-        log_screenshot(image, name=properties.SCREENSHOT_LOGGING_NAME)
+    img_logger.transform(write_rays)
 
     return distances
 
