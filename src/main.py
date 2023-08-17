@@ -47,8 +47,9 @@ def loop():
         _detections_without_finding_player = 0
     except NoPlayerFoundException as e:
         logger.warning("I don't see the cursor !")
+        sensor.clear()
         _detections_without_finding_player += 1
-        if _detections_without_finding_player > 3:
+        if _detections_without_finding_player > properties.MAX_PLAYER_LOST:
             raise e
         return
     available_distances = sensor.detect_available_distances()
