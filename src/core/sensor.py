@@ -219,6 +219,15 @@ def detect_available_distances() -> list[int]:
 
     def write_rays(image: np.ndarray):
         for ray, d in enumerate(distances):
+            ray_start = center + np.int_(
+                np.array(
+                    [
+                        properties.SENSOR_RAY_START_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                        -properties.SENSOR_RAY_START_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                    ]
+                )
+            )
+
             ray_end = center + np.int_(
                 np.array(
                     [
@@ -228,7 +237,7 @@ def detect_available_distances() -> list[int]:
                 )
             )
 
-            cv2.line(image, np.flip(center), np.flip(ray_end), properties.SCREENSHOT_LOGGER_RAYS_COLOR)
+            cv2.line(image, np.flip(ray_start), np.flip(ray_end), properties.SCREENSHOT_LOGGER_RAYS_COLOR)
         return image
 
     img_logger.transform(write_rays)
