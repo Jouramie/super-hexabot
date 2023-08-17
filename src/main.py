@@ -5,6 +5,7 @@ from pathlib import Path
 import properties
 from core import sensor, brain, motor
 from core.sensor import NoPlayerFoundException
+from util import img_logger
 from util.profiling import timeit
 
 _detections_without_finding_player = 0
@@ -84,3 +85,4 @@ if __name__ == "__main__":
     finally:
         sensor.stop()
         motor.stop()
+        img_logger.finalize()

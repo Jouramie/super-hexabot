@@ -48,7 +48,7 @@ def start():
         while _running:
             loop()
 
-    _thread = threading.Thread(target=run)
+    _thread = threading.Thread(target=run, daemon=True)
 
     keyboard.press("space")
     time.sleep(0.05)
