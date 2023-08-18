@@ -51,8 +51,9 @@ def push_image_to_buffer(name, image):
         _buffer.append((name, image))
 
 
-_thread = threading.Thread(target=log_next_image)
-_thread.start()
+if _running:
+    _thread = threading.Thread(target=log_next_image)
+    _thread.start()
 
 
 def submit(image):
@@ -71,13 +72,12 @@ def transform(transformation):
     _image = transformation(_image)
 
 
-def publish(name=None):
+def publish():
     global _image
     if not properties.SCREENSHOT_LOGGER_ENABLED or _image is None:
         return
 
-    if name is None:
-        name = properties.SCREENSHOT_LOGGER_IMAGE_NAME
+    name = properties.SCREENSHOT_LOGGER_IMAGE_NAME
     if name is None:
         name = f"{datetime.now().replace().isoformat().replace(':', '')}.tiff"
 
