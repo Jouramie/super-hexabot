@@ -218,6 +218,14 @@ def detect_available_distances() -> list[int]:
             )
 
             if _mask.shape[0] <= position[0] or _mask.shape[1] <= position[1]:
+                # position = center + np.int_(
+                #     np.array(
+                #         [
+                #             properties.SENSOR_RAY_MAX_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                #             -properties.SENSOR_RAY_MAX_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                #         ]
+                #     )
+                # )
                 break
 
             if _mask[position[0], position[1]] == 255:
