@@ -132,18 +132,32 @@ def detect_player() -> float:
     :return: The orientation of the player between -1 and 1 where 0 is up.
     """
     global _mask
-    # global _image
     if _mask is None:
         apply_mask()
 
     assert isinstance(_mask, np.ndarray)
-    # debug = np.array(_image)
 
-    mark_player_cut = _mask[
+    mask_player_cut = _mask[
         properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2], properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3]
     ]
 
-    cnts = cv2.findContours(mark_player_cut, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    mask_player_circle = np.ones_like(mask_player_cut) * 255
+    mask_player_circle = cv2.circle(
+        mask_player_circle,
+        (properties.EXPECTED_PLAYER_AREA_RADIUS, properties.EXPECTED_PLAYER_AREA_RADIUS),
+        properties.EXPECTED_PLAYER_AREA_RADIUS,
+        (0, 0, 0),
+        cv2.FILLED,
+    )
+    mask_player_cut = cv2.subtract(mask_player_cut, mask_player_circle)
+
+    def write_player_circle(image: np.ndarray):
+        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.EXPECTED_PLAYER_AREA_RADIUS, properties.SCREENSHOT_LOGGER_PLAYER_CICLE_COLOR, 1)
+        return image
+
+    img_logger.transform(write_player_circle)
+
+    cnts = cv2.findContours(mask_player_cut, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
     image_number = 0

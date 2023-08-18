@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 _image: np.ndarray | None = None
 
 
-_running = True
+_running = properties.SCREENSHOT_LOGGER_ENABLED
 _buffer = deque(maxlen=MAX_BUFFER_SIZE)
 _lock = threading.Lock()
 
@@ -71,12 +71,13 @@ def transform(transformation):
     _image = transformation(_image)
 
 
-def publish():
+def publish(name=None):
     global _image
     if not properties.SCREENSHOT_LOGGER_ENABLED or _image is None:
         return
 
-    name = properties.SCREENSHOT_LOGGER_IMAGE_NAME
+    if name is None:
+        name = properties.SCREENSHOT_LOGGER_IMAGE_NAME
     if name is None:
         name = f"{datetime.now().replace().isoformat().replace(':', '')}.tiff"
 
@@ -84,6 +85,11 @@ def publish():
     push_image_to_buffer(name, _image)
 
     _image = None
+
+
+def log_now(image, name=None):
+    image = PIL.Image.fromarray(image)
+    image.save(Path(f"{properties.SCREENSHOT_LOGGER_LOGS_PATH}/{name}"))
 
 
 def finalize():
