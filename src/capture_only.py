@@ -13,7 +13,7 @@ def loop():
 
     sensor.capture()
     sensor.clear()
-    time.sleep(0.5)
+    time.sleep(0.1)
 
 
 if __name__ == "__main__":
@@ -21,7 +21,11 @@ if __name__ == "__main__":
     if not logs_folder.exists():
         logs_folder.mkdir()
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", handlers=[logging.FileHandler("logs/super-hexabot.log", mode="w")])
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+        handlers=[logging.FileHandler("logs/super-hexabot.log", mode="w")],
+    )
     logger = logging.getLogger(__name__)
 
     sensor.calibrate()

@@ -7,8 +7,8 @@ from PIL import Image
 from pyscreeze import Box
 
 import properties
-from core import sensor
-from util import img_logger
+from core import sensor, brain
+from util import img_logger, img_edit
 
 TEST_IMAGES_PATH = "test/resources/hexagoner"
 
@@ -17,7 +17,9 @@ test_images = os.listdir(TEST_IMAGES_PATH)
 
 class TestHexagoner(TestCase):
     def setUp(self) -> None:
-        sensor._game_position = Box(0, 0, properties.GAME_WINDOW_WITHOUT_MARGIN[2], properties.GAME_WINDOW_WITHOUT_MARGIN[3])
+        sensor._game_position = Box(
+            0, 0, properties.GAME_WINDOW_WITHOUT_MARGIN[2], properties.GAME_WINDOW_WITHOUT_MARGIN[3]
+        )
         sensor._camera = MagicMock()
 
     def tearDown(self) -> None:
@@ -30,9 +32,16 @@ class TestHexagoner(TestCase):
                 properties.SCREENSHOT_LOGGER_IMAGE_NAME = test_image
 
                 sensor.capture()
+                position, distance = sensor.detect_player()
+                available_distances = sensor.detect_available_distances()
+                unsafe, direction = brain.choose_direction(position, distance, available_distances)
+
+                img_logger.edit(img_edit.draw_player_rotation(position, direction, unsafe))
+                img_logger.edit(img_edit.draw_safe_area(distance))
+                img_logger.edit(img_edit.draw_unsafe_area(distance))
 
                 try:
-                    assert sensor.detect_player()
-                    assert len(set(sensor.detect_available_distances())) > 1
+                    assert position, distance
+                    assert len(set(available_distances)) > 1
                 finally:
                     sensor.clear()
