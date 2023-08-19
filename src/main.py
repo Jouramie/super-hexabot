@@ -36,12 +36,12 @@ def loop():
         sensor.clear()
         return
     available_distances = sensor.detect_available_distances()
-    unsafe, direction = brain.choose_direction(position, available_distances)
+    unsafe, direction = brain.choose_direction(position, distance, available_distances)
     motor.turn(unsafe, direction)
 
     img_logger.edit(img_edit.draw_player_rotation(position, direction, unsafe))
-    img_logger.edit(img_edit.draw_safe_area())
-    img_logger.edit(img_edit.draw_unsafe_area())
+    img_logger.edit(img_edit.draw_safe_area(distance))
+    img_logger.edit(img_edit.draw_unsafe_area(distance))
 
     sensor.clear()
 

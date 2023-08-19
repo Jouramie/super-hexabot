@@ -12,19 +12,23 @@ def draw_player_area():
     return edit
 
 
-def draw_safe_area():
+def draw_safe_area(distance):
     def edit(image: np.ndarray):
-        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.BRAIN_MINIMAL_SPACE, properties.SCREENSHOT_EDIT_PLAYER_COLOR, 1)
+        cv2.circle(image, properties.EXPECTED_CENTER[::-1], distance + properties.BRAIN_MINIMAL_SPACE_OFFSET, properties.SCREENSHOT_EDIT_PLAYER_COLOR, 1)
         return image
 
     return edit
 
 
-def draw_unsafe_area():
+def draw_unsafe_area(distance):
     def edit(image: np.ndarray):
-        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.BRAIN_UNSAFE_SPACE, properties.SCREENSHOT_EDIT_UNSAFE_COLOR, 1)
+        cv2.circle(image, properties.EXPECTED_CENTER[::-1], distance + properties.BRAIN_UNSAFE_SPACE_OFFSET, properties.SCREENSHOT_EDIT_UNSAFE_COLOR, 1)
         cv2.circle(
-            image, properties.EXPECTED_CENTER[::-1], properties.BRAIN_UNSAFE_SPACE + properties.BRAIN_SAFE_MARGIN, properties.SCREENSHOT_EDIT_UNSAFE_COLOR, 1
+            image,
+            properties.EXPECTED_CENTER[::-1],
+            distance + properties.BRAIN_UNSAFE_SPACE_OFFSET + properties.BRAIN_SAFE_MARGIN,
+            properties.SCREENSHOT_EDIT_UNSAFE_COLOR,
+            1,
         )
         return image
 

@@ -3,8 +3,8 @@ from unittest import TestCase
 import properties
 from core import brain
 
-properties.BRAIN_MINIMAL_SPACE = 10
-properties.BRAIN_UNSAFE_SPACE = 20
+properties.BRAIN_MINIMAL_SPACE_OFFSET = 10
+properties.BRAIN_UNSAFE_SPACE_OFFSET = 20
 properties.SENSOR_RAY_AMOUNT = 8
 properties.BRAIN_REQUIRED_SAFE_SPACE = 2
 
