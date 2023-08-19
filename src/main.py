@@ -57,6 +57,7 @@ def loop():
     motor.turn(direction)
 
     img_logger.edit(img_edit.draw_player_rotation(position, direction))
+    img_logger.edit(img_edit.draw_safe_area())
 
     sensor.clear()
 

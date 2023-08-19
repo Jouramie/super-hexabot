@@ -85,6 +85,8 @@ def loop():
 
     if new_direction is not None:
         keyboard.press(new_direction)
+        keyboard.release(new_direction)
+        keyboard.press(new_direction)
     _last_direction = new_direction
 
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED

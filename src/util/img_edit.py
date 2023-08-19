@@ -6,7 +6,15 @@ import properties
 
 def draw_player_area():
     def edit(image: np.ndarray):
-        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.EXPECTED_PLAYER_AREA_RADIUS, properties.SCREENSHOT_EDIT_PLAYER_AREA_COLOR, 1)
+        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.EXPECTED_PLAYER_AREA_RADIUS, properties.SCREENSHOT_EDIT_RAYS_COLOR, 1)
+        return image
+
+    return edit
+
+
+def draw_safe_area():
+    def edit(image: np.ndarray):
+        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.BRAIN_MINIMAL_SPACE, properties.SCREENSHOT_EDIT_PLAYER_COLOR, 1)
         return image
 
     return edit
@@ -60,7 +68,7 @@ def draw_player_rotation(position, direction):
             0,
             position_from_x_axis * 180,
             (position_from_x_axis + direction) * 180,
-            properties.SCREENSHOT_EDIT_PLAYER_ROTATION_COLOR,
+            properties.SCREENSHOT_EDIT_PLAYER_COLOR,
             1,
         )
         return image
