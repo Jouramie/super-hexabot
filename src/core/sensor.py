@@ -229,9 +229,10 @@ def detect_available_distances() -> list[int]:
 
     if properties.SENSOR_APPLY_BLUR:
         padding = len(CONVOLUTION_MATRIX) - 1
-        array_with_padding = np.array(distances[-padding:] + distances + distances[:padding])
+        distances_for_blur = [d if d != -1 else ray_start_i * properties.SENSOR_RAY_PIXEL_SKIP for d in distances]
+        array_with_padding = np.array(distances_for_blur[-padding:] + distances_for_blur + distances_for_blur[:padding])
         convolve = np.convolve(array_with_padding, CONVOLUTION_MATRIX, "same")
-        distances = list(np.int_(convolve))[padding:-padding]
+        distances = [d if distances[i] != -1 else -1 for i, d in enumerate(list(np.int_(convolve))[padding:-padding])]
 
     img_logger.edit(img_edit.draw_rays(center, ray_start_i, distances))
 

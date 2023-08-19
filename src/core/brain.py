@@ -68,13 +68,13 @@ def go_to_nearest_safe(position, approximated_index, available_distances) -> Non
             wall_left = True
 
         if not wall_right and all(
-            available_distances[(approximated_index + i + j) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+            available_distances[(approximated_index + i + j) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE + properties.BRAIN_SAFE_MARGIN
             for j in range(0, properties.BRAIN_REQUIRED_SAFE_SPACE)
         ):
             return calculate_right_turn(position, to_circle_percent(approximated_index + i))
 
         if not wall_left and all(
-            available_distances[(approximated_index - i - j) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+            available_distances[(approximated_index - i - j) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE + properties.BRAIN_SAFE_MARGIN
             for j in range(0, properties.BRAIN_REQUIRED_SAFE_SPACE)
         ):
             return calculate_left_turn(position, to_circle_percent(approximated_index - i))
