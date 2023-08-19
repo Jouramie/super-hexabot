@@ -96,10 +96,10 @@ def loop():
 
     if new_direction is None:
         ts = time.perf_counter_ns()
-        time.sleep(properties.MOTOR_MAX_SLEEP)
+        time.sleep(properties.MOTOR_SMALL_SLEEP)
         te = time.perf_counter_ns()
         time_slept = (te - ts) / 1e9
-        logger.info(f"  Not turning, slept for {time_slept}. Expected {properties.MOTOR_MAX_SLEEP}.")
+        logger.info(f"  Not turning, slept for {time_slept}. Expected {properties.MOTOR_SMALL_SLEEP}.")
         return
 
     keyboard.press(new_direction)
@@ -108,11 +108,11 @@ def loop():
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED
     logger.info(f"  Turning {new_direction} for {rotation} during {time_to_sleep}.")
     if abs(rotation) > properties.MOTOR_LARGE_ROTATION:
-        time_to_sleep = time_to_sleep / 2
-    elif unsafe and time_to_sleep > properties.MOTOR_MAX_SLEEP * 2:
-        time_to_sleep = properties.MOTOR_MAX_SLEEP * 2
-    elif time_to_sleep > properties.MOTOR_MAX_SLEEP or time_to_sleep == 0:
-        time_to_sleep = properties.MOTOR_MAX_SLEEP
+        time_to_sleep = properties.MOTOR_LONG_SLEEP
+    elif unsafe and time_to_sleep > properties.MOTOR_SMALL_SLEEP * 2:
+        time_to_sleep = properties.MOTOR_SMALL_SLEEP * 2
+    elif time_to_sleep > properties.MOTOR_SMALL_SLEEP or time_to_sleep == 0:
+        time_to_sleep = properties.MOTOR_SMALL_SLEEP
 
     ts = time.perf_counter_ns()
     time.sleep(time_to_sleep)

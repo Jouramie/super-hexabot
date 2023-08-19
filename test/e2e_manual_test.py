@@ -24,7 +24,7 @@ class Test(TestCase):
     # @skip
     def test_manual(self):
         sensor._camera = MagicMock()
-        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-18T235051.318498.tiff"))
+        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-19T021314.759214.tiff"))
 
         sensor.capture()
 
@@ -33,3 +33,12 @@ class Test(TestCase):
         chosen_direction = brain.choose_direction(position, distances)
 
         self.assertAlmostEqual(chosen_direction[1], 0.0, delta=properties.MOTOR_MIN_ROTATION)
+
+    def test_mask(self):
+        sensor._camera = MagicMock()
+        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-19T105010.356205.tiff"))
+
+        sensor.capture()
+
+        sensor.apply_mask()
+        img_logger.log_now(sensor._mask, "mask_test.tiff")

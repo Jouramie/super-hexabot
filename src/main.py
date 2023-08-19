@@ -24,7 +24,7 @@ def loop():
 
     sensor.capture()
     try:
-        position = sensor.detect_player()
+        position, distance = sensor.detect_player()
         _detections_without_finding_player = 0
     except NoPlayerFoundException as e:
         logger.warning("I don't see the cursor !")

@@ -16,8 +16,7 @@ def choose_direction(position: float, available_distances: list[int]) -> (bool, 
     approximated_index = (position + 1) * properties.SENSOR_RAY_AMOUNT / 2
     round_index = round(approximated_index) % properties.SENSOR_RAY_AMOUNT
 
-    unsafe = available_distances[round_index] < properties.BRAIN_UNSAFE_SPACE
-    if unsafe:
+    if is_in_unsafe_position(available_distances, round_index):
         safe = go_to_nearest_safe(position, round_index, available_distances)
         if safe is not None:
             return True, safe
@@ -44,6 +43,18 @@ def choose_direction(position: float, available_distances: list[int]) -> (bool, 
     selected_turn = select_best_possible_turn(possible_turns, approximated_index, reachable_available_distances)
 
     return False, selected_turn
+
+
+def is_in_unsafe_position(available_distances, round_index):
+    return (
+        sum(
+            [
+                available_distances[i % properties.SENSOR_RAY_AMOUNT] >= properties.BRAIN_UNSAFE_SPACE
+                for i in range(round_index - properties.BRAIN_REQUIRED_SAFE_SPACE + 1, round_index + properties.BRAIN_REQUIRED_SAFE_SPACE)
+            ]
+        )
+        < properties.BRAIN_REQUIRED_SAFE_SPACE
+    )
 
 
 def go_to_nearest_safe(position, approximated_index, available_distances) -> None | float:

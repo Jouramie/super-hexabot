@@ -23,6 +23,7 @@ Region = namedtuple("Region", ["left", "top", "right", "bottom"])
 _game_position: Region | None = None
 _image: np.ndarray | None = None
 _mask: np.ndarray | None = None
+_player_distance: int | None = None
 _camera: dxcam.DXCamera | None = None
 
 
@@ -126,12 +127,13 @@ def set_capture(screenshot: np.ndarray):
     _mask = None
 
 
-def detect_player() -> float:
+def detect_player() -> (float, int):
     """
     Find player orientation.
     :return: The orientation of the player between -1 and 1 where 0 is up.
     """
     global _mask
+    global _player_distance
     if _mask is None:
         apply_mask()
 
@@ -178,16 +180,19 @@ def detect_player() -> float:
         print(f"Found {image_number} that could be player. Will use the first one.")
 
     from_center = pos[0] - properties.EXPECTED_CENTER
+    _player_distance = int(np.linalg.norm(from_center))
     angle = np.angle(from_center[0] + from_center[1] * 1j) / np.pi
-    return 1 - angle if angle > 0 else -1 - angle
+    return 1 - angle if angle > 0 else -1 - angle, _player_distance
 
 
+@timeit(name="walls", print_each_call=True)
 def detect_available_distances() -> list[int]:
     """
     Shoot rays in equally split directions
     :return: A list of the available space in different directions, starting from the bottom, going clockwise.
     """
     global _mask
+    global _player_distance
     if _mask is None:
         apply_mask()
 
@@ -195,10 +200,11 @@ def detect_available_distances() -> list[int]:
 
     distances = []
     center = np.array(properties.EXPECTED_CENTER)
+    ray_start_i = int(_player_distance / properties.SENSOR_RAY_PIXEL_SKIP) + properties.SENSOR_RAY_PLAYER_MARGIN
     for ray in range(properties.SENSOR_RAY_AMOUNT):
         position = center
         wall = False
-        for i in range(properties.SENSOR_RAY_START_ITERATION, properties.SENSOR_RAY_MAX_ITERATION):
+        for i in range(ray_start_i, properties.SENSOR_RAY_MAX_ITERATION):
             position = center + np.int_(
                 np.array(
                     [
@@ -212,7 +218,7 @@ def detect_available_distances() -> list[int]:
                 break
 
             if _mask[position[0], position[1]] == 255:
-                if i == properties.SENSOR_RAY_START_ITERATION:
+                if i == ray_start_i:
                     wall = True
                 break
 
@@ -227,7 +233,7 @@ def detect_available_distances() -> list[int]:
         convolve = np.convolve(array_with_padding, CONVOLUTION_MATRIX, "same")
         distances = list(np.int_(convolve))[padding:-padding]
 
-    img_logger.edit(img_edit.draw_rays(center, distances))
+    img_logger.edit(img_edit.draw_rays(center, ray_start_i, distances))
 
     return distances
 

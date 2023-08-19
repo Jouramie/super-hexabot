@@ -32,7 +32,7 @@ class TestHexagonest(TestCase):
                 sensor.capture()
 
                 try:
-                    assert len(set(sensor.detect_available_distances())) > 1
                     assert sensor.detect_player()
+                    assert len(set(sensor.detect_available_distances())) > 1
                 finally:
                     sensor.clear()

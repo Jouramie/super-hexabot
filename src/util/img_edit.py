@@ -38,14 +38,14 @@ def draw_player(contour):
     return edit
 
 
-def draw_rays(center, distances):
+def draw_rays(center, ray_start_i, distances):
     def edit(image: np.ndarray):
         for ray, d in enumerate(distances):
             ray_start = center + np.int_(
                 np.array(
                     [
-                        properties.SENSOR_RAY_START_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                        -properties.SENSOR_RAY_START_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                        ray_start_i * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                        -ray_start_i * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
                     ]
                 )
             )
