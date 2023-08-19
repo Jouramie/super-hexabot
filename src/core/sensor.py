@@ -197,6 +197,7 @@ def detect_available_distances() -> list[int]:
     center = np.array(properties.EXPECTED_CENTER)
     for ray in range(properties.SENSOR_RAY_AMOUNT):
         position = center
+        wall = False
         for i in range(properties.SENSOR_RAY_START_ITERATION, properties.SENSOR_RAY_MAX_ITERATION):
             position = center + np.int_(
                 np.array(
@@ -208,20 +209,17 @@ def detect_available_distances() -> list[int]:
             )
 
             if _mask.shape[0] <= position[0] or _mask.shape[1] <= position[1]:
-                # position = center + np.int_(
-                #     np.array(
-                #         [
-                #             properties.SENSOR_RAY_MAX_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                #             -properties.SENSOR_RAY_MAX_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                #         ]
-                #     )
-                # )
                 break
 
             if _mask[position[0], position[1]] == 255:
+                if i == properties.SENSOR_RAY_START_ITERATION:
+                    wall = True
                 break
 
-        distances.append(int(np.linalg.norm(position - center)))
+        if wall:
+            distances.append(properties.SENSOR_IMPOSSIBLE_WALL)
+        else:
+            distances.append(int(np.linalg.norm(position - center)))
 
     if properties.SENSOR_APPLY_BLUR:
         padding = len(CONVOLUTION_MATRIX) - 1

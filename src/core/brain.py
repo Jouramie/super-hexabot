@@ -47,34 +47,29 @@ def choose_direction(position: float, available_distances: list[int]) -> (bool, 
 
 
 def go_to_nearest_safe(position, approximated_index, available_distances) -> None | float:
-    to_explore = zip(
-        range(approximated_index, int(approximated_index + properties.SENSOR_RAY_AMOUNT / 2)),
-        range(approximated_index - 1, int(approximated_index - properties.SENSOR_RAY_AMOUNT / 2) - 1, -1),
-    )
-    nearest_safes = [
-        j
-        for i in to_explore
-        for j in i
-        if available_distances[j % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
-        and (
-            (
-                available_distances[(j + 1) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
-                and available_distances[(j + 2) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
-            )
-            or (
-                available_distances[(j - 1) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
-                and available_distances[(j - 2) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
-            )
-        )
-    ]
-    if not nearest_safes:
-        logger.warning(f"Ohno, found no safe space! Prepare to die...")
-        return None
+    nearest = None
+    wall_left = False
+    wall_right = False
+    for i in range(0, properties.SENSOR_RAY_AMOUNT):
+        if available_distances[(approximated_index + i) % properties.SENSOR_RAY_AMOUNT] == properties.SENSOR_IMPOSSIBLE_WALL:
+            wall_right = True
+        if available_distances[(approximated_index - i) % properties.SENSOR_RAY_AMOUNT] == properties.SENSOR_IMPOSSIBLE_WALL:
+            wall_left = True
 
-    nearest = nearest_safes[0]
+        if not wall_right and all(
+            available_distances[(approximated_index + i + j) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+            for j in range(0, properties.BRAIN_REQUIRED_SAFE_SPACE)
+        ):
+            return calculate_right_turn(position, to_circle_percent(approximated_index + i))
 
-    logger.info(f"Position at {approximated_index} is unsafe. Running to {nearest}.")
-    return min(calculate_turns([nearest], position), key=lambda x: abs(x))
+        if not wall_left and all(
+            available_distances[(approximated_index - i - j) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+            for j in range(0, properties.BRAIN_REQUIRED_SAFE_SPACE)
+        ):
+            return calculate_left_turn(position, to_circle_percent(approximated_index - i))
+
+    logger.warning(f"Ohno, found no safe space! Prepare to die...")
+    return None
 
 
 def select_best_possible_turn(possible_turns, position, reachable_available_distances):
@@ -105,21 +100,30 @@ def select_best_possible_turn(possible_turns, position, reachable_available_dist
 def calculate_turns(possible_destinations, position):
     turns = []
     for i in possible_destinations:
-        left, right = calculate_left_and_right_turns(position, to_circle_percent(i))
-        turns.append(left)
-        turns.append(right)
+        turns.append(calculate_left_turn(position, to_circle_percent(i)))
+        turns.append(calculate_right_turn(position, to_circle_percent(i)))
 
     return turns
 
 
 def calculate_left_and_right_turns(position: float, target: float) -> (float, float):
+    return calculate_left_turn(position, target), calculate_right_turn(position, target)
+
+
+def calculate_left_turn(position: float, target: float) -> float:
     direction = target - position
 
-    if direction <= 0:
-        return direction, direction + 2
-
     if direction > 0:
-        return direction, direction - 2
+        return direction - 2
+    return direction
+
+
+def calculate_right_turn(position: float, target: float) -> float:
+    direction = target - position
+
+    if direction < 0:
+        return direction + 2
+    return direction
 
 
 def calculate_reachable(approximated_index: int, normalized_obstacles: list[int]) -> set[int]:
