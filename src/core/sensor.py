@@ -9,7 +9,7 @@ import pyautogui
 import win32gui
 
 import properties
-from util import img_logger
+from util import img_logger, img_edit
 from util.profiling import timeit
 
 logger = logging.getLogger(__name__)
@@ -151,11 +151,7 @@ def detect_player() -> float:
     )
     mask_player_cut = cv2.subtract(mask_player_cut, mask_player_circle)
 
-    def write_player_circle(image: np.ndarray):
-        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.EXPECTED_PLAYER_AREA_RADIUS, properties.SCREENSHOT_LOGGER_PLAYER_CICLE_COLOR, 1)
-        return image
-
-    img_logger.transform(write_player_circle)
+    img_logger.edit(img_edit.draw_player_area())
 
     cnts = cv2.findContours(mask_player_cut, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -173,13 +169,7 @@ def detect_player() -> float:
             cy = int(moments["m01"] / moments["m00"])
             pos.append(np.array([cy + properties.EXPECTED_PLAYER_AREA[0], cx + properties.EXPECTED_PLAYER_AREA[1]]))
 
-            def write_player(image: np.ndarray):
-                cv2.drawContours(
-                    image, [c + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]], 0, properties.SCREENSHOT_LOGGER_PLAYER_COLOR, 1
-                )
-                return image
-
-            img_logger.transform(write_player)
+            img_logger.edit(img_edit.draw_player(c))
 
     if not pos:
         raise NoPlayerFoundException()
@@ -239,30 +229,7 @@ def detect_available_distances() -> list[int]:
         convolve = np.convolve(array_with_padding, CONVOLUTION_MATRIX, "same")
         distances = list(np.int_(convolve))[padding:-padding]
 
-    def write_rays(image: np.ndarray):
-        for ray, d in enumerate(distances):
-            ray_start = center + np.int_(
-                np.array(
-                    [
-                        properties.SENSOR_RAY_START_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                        -properties.SENSOR_RAY_START_ITERATION * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                    ]
-                )
-            )
-
-            ray_end = center + np.int_(
-                np.array(
-                    [
-                        d * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                        -d * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                    ]
-                )
-            )
-
-            cv2.line(image, np.flip(ray_start), np.flip(ray_end), properties.SCREENSHOT_LOGGER_RAYS_COLOR)
-        return image
-
-    img_logger.transform(write_rays)
+    img_logger.edit(img_edit.draw_rays(center, distances))
 
     return distances
 

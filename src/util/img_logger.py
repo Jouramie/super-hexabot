@@ -64,12 +64,12 @@ def submit(image):
     _image = image
 
 
-def transform(transformation):
+def edit(edit_func):
     global _image
-    if not properties.SCREENSHOT_LOGGER_ENABLED or not properties.SCREENSHOT_LOGGER_TRANSFORMATION_ENABLED or _image is None:
+    if not properties.SCREENSHOT_LOGGER_ENABLED or not properties.SCREENSHOT_LOGGER_EDIT_ENABLED or _image is None:
         return
 
-    _image = transformation(_image)
+    _image = edit_func(_image)
 
 
 def publish():

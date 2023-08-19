@@ -87,8 +87,8 @@ def loop():
         keyboard.press(new_direction)
     _last_direction = new_direction
 
-    logger.info(f"Turning {new_direction} for {rotation}.")
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED
+    logger.info(f"Turning {new_direction} for {rotation} during {time_to_sleep}.")
     if time_to_sleep > properties.MOTOR_MAX_SLEEP or time_to_sleep == 0:
         time_to_sleep = properties.MOTOR_MAX_SLEEP
 

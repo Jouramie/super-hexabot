@@ -5,7 +5,7 @@ from pathlib import Path
 import properties
 from core import sensor, brain, motor
 from core.sensor import NoPlayerFoundException
-from util import img_logger
+from util import img_logger, img_edit
 from util.profiling import timeit
 
 _detections_without_finding_player = 0
@@ -55,6 +55,8 @@ def loop():
     available_distances = sensor.detect_available_distances()
     direction = brain.choose_direction(position, available_distances)
     motor.turn(direction)
+
+    img_logger.edit(img_edit.draw_player_rotation(position, direction))
 
     sensor.clear()
 
