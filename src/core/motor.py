@@ -33,6 +33,16 @@ def turn(unsafe: bool, rotation: float):
         _destination_timestamp.value = time.perf_counter_ns()
 
 
+def unstuck():
+    global _destination
+    global _destination_timestamp
+    logger.warning(f"Trying to unstuck cursor from wall!!!")
+    if _destination.value < 0:
+        turn(False, properties.MOTOR_MIN_ROTATION)
+    else:
+        turn(False, -properties.MOTOR_MIN_ROTATION)
+
+
 def start():
     global _process
     keyboard.press("space")
@@ -75,10 +85,10 @@ def loop():
     current_destination_timestamp = _destination_timestamp.value
 
     new_direction = None
-    if rotation < -properties.MOTOR_MIN_ROTATION:
+    if rotation <= -properties.MOTOR_MIN_ROTATION:
         new_direction = "left"
 
-    if rotation > properties.MOTOR_MIN_ROTATION:
+    if rotation >= properties.MOTOR_MIN_ROTATION:
         new_direction = "right"
 
     keyboard.release("left")
