@@ -24,7 +24,7 @@ def calculate_speed():
     te = time.perf_counter()
     re = sensor.detect_player()
     dt = te - ts
-    dr = brain.calculate_turn(rs, re)
+    dr = min(brain.calculate_left_and_right_turns(rs, re))
 
     speed = dr / dt
 

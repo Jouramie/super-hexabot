@@ -1,4 +1,5 @@
 import logging
+from math import ceil, floor
 
 import properties
 
@@ -12,7 +13,7 @@ def choose_direction(position: float, available_distances: list[int]) -> float:
     :param available_distances: the distance before an obstacle, starting down and going clockwise
     :return: the direction where to turn to get to the ideal position to avoid the obstacles, from -1 to 1 where 1 would be a 180 degrees turn clockwise
     """
-    approximated_index = (position + 1) * len(available_distances) / 2
+    approximated_index = (position + 1) * properties.SENSOR_RAY_AMOUNT / 2
 
     reachable = calculate_reachable(round(approximated_index), available_distances)
     reachable_distances = {i: available_distances[i] for i in reachable}
@@ -24,35 +25,63 @@ def choose_direction(position: float, available_distances: list[int]) -> float:
         logger.warning(f"Ohno! Found no reachable directions from {approximated_index}...")
 
     max_available_distance = max(available_distances)
-    obstacle_count = len(available_distances)
-
-    # obstacles_rotation = [
-    #    obst * (1 - abs(calculate_turn(position, to_circle_percent(index, obstacle_count)))) for index, obst in enumerate(available_distances)
-    # ]
+    len(available_distances)
 
     normalized_obstacles = [round(d * properties.BRAIN_CATEGORIZING / max_available_distance) for d in reachable_available_distances]
 
     max_value = max(normalized_obstacles)
-    index_reaching_max = [i for i, j in enumerate(normalized_obstacles) if j == max_value]
-    logger.info(f"Targeting directions {index_reaching_max} where player is around {approximated_index}")
+    indexes_reaching_max = [i for i, j in enumerate(normalized_obstacles) if j == max_value]
+    logger.info(f"Targeting directions {indexes_reaching_max} where player is around {approximated_index}")
 
-    possible_turns = [calculate_turn(position, to_circle_percent(i, obstacle_count)) for i in index_reaching_max]
-    selected_turn = min(possible_turns, key=lambda x: abs(x))
+    possible_turns = calculate_turns(indexes_reaching_max, position)
+    selected_turn = select_best_possible_turn(possible_turns, approximated_index, reachable_available_distances)
+
+    return selected_turn
+
+
+def select_best_possible_turn(possible_turns, position, reachable_available_distances):
+    safe_turns = []
+    for t in possible_turns:
+        moved_pos = t / 2 * properties.SENSOR_RAY_AMOUNT
+        if moved_pos > 0:
+            passing = [p % properties.SENSOR_RAY_AMOUNT for p in range(ceil(position), floor(position + moved_pos))]
+        else:
+            passing = [
+                p % properties.SENSOR_RAY_AMOUNT
+                for p in range(floor(position) + properties.SENSOR_RAY_AMOUNT, ceil(position + moved_pos) + properties.SENSOR_RAY_AMOUNT, -1)
+            ]
+
+        if all(reachable_available_distances[p] > 0 for p in passing):
+            safe_turns.append(t)
+
+    if not safe_turns:
+        logger.warning(f"No safe turn are available. Will pick shortest in all possible turns.")
+        safe_turns = possible_turns
+
+    selected_turn = min(safe_turns, key=lambda x: abs(x))
     logger.info(f"Selected {selected_turn} from {possible_turns}")
 
     return selected_turn
 
 
-def calculate_turn(position: float, target: float) -> float:
+def calculate_turns(indexes_reaching_max, position):
+    turns = []
+    for i in indexes_reaching_max:
+        left, right = calculate_left_and_right_turns(position, to_circle_percent(i))
+        turns.append(left)
+        turns.append(right)
+
+    return turns
+
+
+def calculate_left_and_right_turns(position: float, target: float) -> (float, float):
     direction = target - position
 
-    if direction <= -1:
-        direction += 2
+    if direction <= 0:
+        return direction, direction + 2
 
-    if direction >= 1:
-        direction += -2
-
-    return direction
+    if direction > 0:
+        return direction, direction - 2
 
 
 def calculate_reachable(approximated_index: int, normalized_obstacles: list[int]) -> set[int]:
@@ -76,5 +105,5 @@ def calculate_reachable(approximated_index: int, normalized_obstacles: list[int]
     return reachable
 
 
-def to_circle_percent(index: int, obstacle_count: int) -> float:
-    return index / (obstacle_count / 2) - 1
+def to_circle_percent(index: int) -> float:
+    return index / (properties.SENSOR_RAY_AMOUNT / 2) - 1
