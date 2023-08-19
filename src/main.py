@@ -1,12 +1,12 @@
 import logging
 import time
-from datetime import timedelta
 from pathlib import Path
 
 import properties
 from core import sensor, brain, motor
 from core.sensor import NoPlayerFoundException
 from util import img_logger, img_edit
+from util.log_formatter import ElapsedFormatter
 from util.profiling import timeit
 
 _detections_without_finding_player = 0
@@ -62,20 +62,6 @@ def loop():
     img_logger.edit(img_edit.draw_unsafe_area())
 
     sensor.clear()
-
-
-class ElapsedFormatter:
-    def __init__(self):
-        self.start_time = time.time()
-
-    def format(self, record):
-        elapsed_seconds = record.created - self.start_time
-        # using timedelta here for convenient default formatting
-        elapsed = timedelta(seconds=elapsed_seconds)
-        return "{} {}".format(elapsed, record.getMessage())
-
-    def start(self):
-        self.start_time = time.time()
 
 
 if __name__ == "__main__":

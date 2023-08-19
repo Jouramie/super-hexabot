@@ -1,21 +1,21 @@
 import logging
-import threading
+import multiprocessing as mp
 import time
 
 import keyboard
 
 import properties
+from main import ElapsedFormatter
 
 logger = logging.getLogger(__name__)
 
-_lock = threading.Lock()
-_thread: None | threading.Thread = None
-_running = True
+_lock = mp.Lock()
+_process: None | mp.Process = None
+_running = mp.Value("i", 1)
 
-_destination = 0
-_destination_timestamp = 0
+_destination: mp.Value = mp.Value("d", 0)
+_destination_timestamp = mp.Value("i", 0)
 
-_progress = 0
 _last_direction: None | str = None
 
 
@@ -27,37 +27,44 @@ def turn(rotation: float):
     global _destination_timestamp
     with _lock:
         logger.info(f"Setting rotation to {rotation}")
-        _destination = rotation
-        _destination_timestamp = time.perf_counter_ns()
+        _destination.value = rotation
+        _destination_timestamp.value = time.perf_counter_ns()
 
 
 def start():
-    global _thread
+    global _process
     keyboard.press("space")
     time.sleep(0.15)
     keyboard.release("space")
 
-    def run():
-        global _running
+    _process = mp.Process(target=run, daemon=True, args=(_destination, _destination_timestamp, _running))
+    _process.start()
 
-        keyboard.press("f")
-        time.sleep(0.5)
-        keyboard.release("f")
-        keyboard.press("g")
-        time.sleep(0.5)
-        keyboard.release("g")
-        time.sleep(0.2)
 
-        while _running:
-            loop()
+def run(destination, destination_timestamp, running):
+    global _destination, _destination_timestamp, _running, logger
+    _destination, _destination_timestamp, _running = destination, destination_timestamp, running
 
-    _thread = threading.Thread(target=run, daemon=True)
-    _thread.start()
+    handler = logging.FileHandler("logs/super-hexabot-motor.log", mode="w")
+    handler.setFormatter(ElapsedFormatter())
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", handlers=[handler])
+    logger = logging.getLogger(__name__)
+
+    keyboard.press("left")
+    time.sleep(0.5)
+    keyboard.release("left")
+    keyboard.press("right")
+    time.sleep(0.5)
+    keyboard.release("right")
+    time.sleep(0.2)
+
+    while _running.value:
+        loop()
 
 
 def stop():
     global _running
-    _running = False
+    _running.value = False
 
 
 def loop():
@@ -69,18 +76,18 @@ def loop():
     global _last_direction
     global _destination
     global _destination_timestamp
-    rotation = _destination
-    current_destination_timestamp = _destination_timestamp
+    rotation = _destination.value
+    current_destination_timestamp = _destination_timestamp.value
 
     new_direction = None
     if rotation < -properties.MOTOR_MIN_ROTATION:
-        new_direction = "f"
+        new_direction = "left"
 
     if rotation > properties.MOTOR_MIN_ROTATION:
-        new_direction = "g"
+        new_direction = "right"
 
-    keyboard.release("f")
-    keyboard.release("g")
+    keyboard.release("left")
+    keyboard.release("right")
 
     if new_direction is None:
         ts = time.perf_counter_ns()
@@ -104,10 +111,10 @@ def loop():
     te = time.perf_counter_ns()
     time_slept = (te - ts) / 1e9
     delta = time_slept * properties.MOTOR_SPEED
-    if new_direction == "f":
+    if new_direction == "left":
         delta = -delta
 
     logger.info(f"  Actually turned of {delta} during {time_slept}. Expected {time_to_sleep}.")
-    if current_destination_timestamp == _destination_timestamp:
+    if current_destination_timestamp == _destination_timestamp.value:
         with _lock:
-            _destination = rotation - delta
+            _destination.value = rotation - delta
