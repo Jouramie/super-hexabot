@@ -19,7 +19,7 @@ class TestDetection(TestCase):
 
     @patch("pyautogui.screenshot")
     def test_detect_player_1(self, screenshot):
-        screenshot.return_value = Image.open("resources/session-yellow-red/Image-025.png").crop((10, 56, 777, 535))
+        screenshot.return_value = Image.open("resources/hexagon/Image-025.png").crop((10, 56, 777, 535))
 
         sensor.capture()
 
@@ -29,7 +29,7 @@ class TestDetection(TestCase):
 
     @patch("pyautogui.screenshot")
     def test_detect_player_2(self, screenshot):
-        screenshot.return_value = Image.open("resources/session-yellow-red/Image-233.png").crop((10, 56, 777, 535))
+        screenshot.return_value = Image.open("resources/hexagon/Image-233.png").crop((10, 56, 777, 535))
 
         sensor.capture()
 
@@ -39,7 +39,7 @@ class TestDetection(TestCase):
 
     @patch("pyautogui.screenshot")
     def test_detect_player_3(self, screenshot):
-        screenshot.return_value = Image.open("resources/session-yellow-red/Image-256.png").crop((10, 56, 777, 535))
+        screenshot.return_value = Image.open("resources/hexagon/Image-256.png").crop((10, 56, 777, 535))
 
         sensor.capture()
 
@@ -49,7 +49,7 @@ class TestDetection(TestCase):
 
     @patch("pyautogui.screenshot")
     def test_detect_player_4(self, screenshot):
-        screenshot.return_value = Image.open("resources/session-yellow-red/Image-208.png").crop((10, 56, 777, 535))
+        screenshot.return_value = Image.open("resources/hexagon/Image-208.png").crop((10, 56, 777, 535))
 
         sensor.capture()
 
@@ -60,7 +60,7 @@ class TestDetection(TestCase):
     @patch("pyautogui.screenshot")
     def test_detect_obstacles_without_blur(self, screenshot):
         properties.SENSOR_APPLY_BLUR = False
-        screenshot.return_value = Image.open("resources/session-yellow-red/Image-047.png").crop((10, 56, 777, 535))
+        screenshot.return_value = Image.open("resources/hexagon/Image-047.png").crop((10, 56, 777, 535))
 
         sensor.capture()
 

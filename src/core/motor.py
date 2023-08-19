@@ -13,13 +13,14 @@ _lock = mp.Lock()
 _process: None | mp.Process = None
 _running = mp.Value("i", 1)
 
+_unsafe = mp.Value("i", 0)
 _destination: mp.Value = mp.Value("d", 0)
 _destination_timestamp = mp.Value("i", 0)
 
 _last_direction: None | str = None
 
 
-def turn(rotation: float):
+def turn(unsafe: bool, rotation: float):
     """
     positive is right, negative is left
     """
@@ -28,6 +29,7 @@ def turn(rotation: float):
     with _lock:
         logger.info(f"Setting rotation to {rotation}")
         _destination.value = rotation
+        _unsafe.value = int(unsafe)
         _destination_timestamp.value = time.perf_counter_ns()
 
 
@@ -50,14 +52,6 @@ def run(destination, destination_timestamp, running):
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", handlers=[handler])
     logger = logging.getLogger(__name__)
 
-    keyboard.press("left")
-    time.sleep(0.5)
-    keyboard.release("left")
-    keyboard.press("right")
-    time.sleep(0.5)
-    keyboard.release("right")
-    time.sleep(0.2)
-
     while _running.value:
         loop()
 
@@ -77,6 +71,7 @@ def loop():
     global _destination
     global _destination_timestamp
     rotation = _destination.value
+    unsafe = _unsafe.value
     current_destination_timestamp = _destination_timestamp.value
 
     new_direction = None
@@ -102,7 +97,11 @@ def loop():
 
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED
     logger.info(f"  Turning {new_direction} for {rotation} during {time_to_sleep}.")
-    if time_to_sleep > properties.MOTOR_MAX_SLEEP or time_to_sleep == 0:
+    if abs(rotation) > properties.MOTOR_LARGE_ROTATION:
+        time_to_sleep = time_to_sleep / 2
+    elif unsafe and time_to_sleep > properties.MOTOR_MAX_SLEEP * 2:
+        time_to_sleep = properties.MOTOR_MAX_SLEEP * 2
+    elif time_to_sleep > properties.MOTOR_MAX_SLEEP or time_to_sleep == 0:
         time_to_sleep = properties.MOTOR_MAX_SLEEP
 
     ts = time.perf_counter_ns()
@@ -117,4 +116,5 @@ def loop():
     logger.info(f"  Actually turned of {delta} during {time_slept}. Expected {time_to_sleep}.")
     if current_destination_timestamp == _destination_timestamp.value:
         with _lock:
+            logger.info(f"Continue same rotation.")
             _destination.value = rotation - delta

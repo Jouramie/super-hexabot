@@ -37,6 +37,7 @@ MOTOR_MIN_ROTATION = 0.04
 # The distance moved around the circle in 1 second (in rad/pi)
 MOTOR_SPEED = 2
 MOTOR_MAX_SLEEP = 0.01
+MOTOR_LARGE_ROTATION = 0.5
 
 BRAIN_CATEGORIZING = 4
 BRAIN_MINIMAL_SPACE = 110

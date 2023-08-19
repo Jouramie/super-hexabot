@@ -12,26 +12,6 @@ from util.profiling import timeit
 _detections_without_finding_player = 0
 
 
-def calculate_speed():
-    rs = None
-    while rs is None:
-        sensor.capture()
-        try:
-            rs = sensor.detect_player()
-        except NoPlayerFoundException as e:
-            pass
-    ts = time.perf_counter()
-    sensor.capture()
-    te = time.perf_counter()
-    re = sensor.detect_player()
-    dt = te - ts
-    dr = min(brain.calculate_left_and_right_turns(rs, re))
-
-    speed = dr / dt
-
-    print(f"Took {te} - {ts} = {dt} to capture. Moved from {re} to {re} = {dr}. This gives a speed of {speed}.")
-
-
 @timeit(name="loop", print_each_call=True)
 def loop():
     """
@@ -55,7 +35,7 @@ def loop():
         return
     available_distances = sensor.detect_available_distances()
     unsafe, direction = brain.choose_direction(position, available_distances)
-    motor.turn(direction)
+    motor.turn(unsafe, direction)
 
     img_logger.edit(img_edit.draw_player_rotation(position, direction, unsafe))
     img_logger.edit(img_edit.draw_safe_area())
@@ -88,8 +68,7 @@ if __name__ == "__main__":
         motor.start()
         formatter.start()
 
-        time.sleep(1)
-        calculate_speed()
+        time.sleep(0.2)
         while properties.MOVEMENT_ENABLED:
             loop()
     finally:

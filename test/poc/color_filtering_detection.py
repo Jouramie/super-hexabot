@@ -17,7 +17,7 @@ for filename in os.listdir("../../target"):
 top_left_corner = (56, 10)
 bottom_right_corner = (535, 777)
 
-images_directory = "session-yellow-red"
+images_directory = "hexagon"
 
 
 @dataclass(frozen=True)

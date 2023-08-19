@@ -33,7 +33,7 @@ class ColorBoundary:
     upper_bound: np.array
 
 
-color_boundary = ColorBoundary("red", np.array([0, 150, 160]), np.array([255, 255, 255]))
+color_boundary = ColorBoundary("red", np.array([0, 0, 150]), np.array([255, 255, 255]))
 
 
 class NoPlayerFoundException(Exception):

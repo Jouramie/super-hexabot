@@ -10,12 +10,12 @@ import properties
 from core import sensor
 from util import img_logger
 
-TEST_IMAGES_PATH = "test/resources/session-orange-green"
+TEST_IMAGES_PATH = "test/resources/hexagoner"
 
 test_images = os.listdir(TEST_IMAGES_PATH)
 
 
-class TestOrangeGreen(TestCase):
+class TestHexagoner(TestCase):
     def setUp(self) -> None:
         sensor._game_position = Box(0, 0, properties.GAME_WINDOW_WITHOUT_MARGIN[2], properties.GAME_WINDOW_WITHOUT_MARGIN[3])
         sensor._camera = MagicMock()
