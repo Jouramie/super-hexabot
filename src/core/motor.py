@@ -85,8 +85,6 @@ def loop():
 
     if new_direction is not None:
         keyboard.press(new_direction)
-        keyboard.release(new_direction)
-        keyboard.press(new_direction)
     _last_direction = new_direction
 
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED
@@ -97,15 +95,13 @@ def loop():
     ts = time.perf_counter_ns()
     time.sleep(time_to_sleep)
 
-    if new_direction is None:
-        return
-
     te = time.perf_counter_ns()
-    delta = (te - ts) / 1e9 * properties.MOTOR_SPEED
+    time_slept = (te - ts) / 1e9
+    delta = time_slept * properties.MOTOR_SPEED
     if new_direction == "left":
         delta = -delta
 
-    logger.info(f"Actually turned of {delta}.")
+    logger.info(f"Actually turned of {delta} during {time_slept}. Expected {time_to_sleep}.")
     if current_destination_timestamp == _destination_timestamp:
         with _lock:
             _destination = rotation - delta

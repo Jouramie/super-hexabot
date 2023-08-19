@@ -141,6 +141,16 @@ files = [
 ]
 
 [[package]]
+name = "evdev"
+version = "1.6.1"
+description = "Bindings to the Linux input handling subsystem"
+optional = false
+python-versions = "*"
+files = [
+    {file = "evdev-1.6.1.tar.gz", hash = "sha256:299db8628cc73b237fc1cc57d3c2948faa0756e2a58b6194b5bf81dc2081f1e3"},
+]
+
+[[package]]
 name = "exceptiongroup"
 version = "1.1.3"
 description = "Backport of PEP 654 (exception groups)"
@@ -549,6 +559,24 @@ python-versions = "*"
 files = [
     {file = "PyMsgBox-1.0.9.tar.gz", hash = "sha256:2194227de8bff7a3d6da541848705a155dcbb2a06ee120d9f280a1d7f51263ff"},
 ]
+
+[[package]]
+name = "pynput"
+version = "1.7.6"
+description = "Monitor and control user input devices"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pynput-1.7.6-py2.py3-none-any.whl", hash = "sha256:19861b2a0c430d646489852f89500e0c9332e295f2c020e7c2775e7046aa2e2f"},
+    {file = "pynput-1.7.6.tar.gz", hash = "sha256:3a5726546da54116b687785d38b1db56997ce1d28e53e8d22fc656d8b92e533c"},
+]
+
+[package.dependencies]
+evdev = {version = ">=1.3", markers = "sys_platform in \"linux\""}
+pyobjc-framework-ApplicationServices = {version = ">=8.0", markers = "sys_platform == \"darwin\""}
+pyobjc-framework-Quartz = {version = ">=8.0", markers = "sys_platform == \"darwin\""}
+python-xlib = {version = ">=0.17", markers = "sys_platform in \"linux\""}
+six = "*"
 
 [[package]]
 name = "pyobjc"
@@ -3423,6 +3451,20 @@ pytest = ">=5.0"
 dev = ["pre-commit", "pytest-asyncio", "tox"]
 
 [[package]]
+name = "python-xlib"
+version = "0.33"
+description = "Python X Library"
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-xlib-0.33.tar.gz", hash = "sha256:55af7906a2c75ce6cb280a584776080602444f75815a7aff4d287bb2d7018b32"},
+    {file = "python_xlib-0.33-py2.py3-none-any.whl", hash = "sha256:c3534038d42e0df2f1392a1b30a15a4ff5fdc2b86cfa94f072bf11b10a164398"},
+]
+
+[package.dependencies]
+six = ">=1.10.0"
+
+[[package]]
 name = "python3-xlib"
 version = "0.15"
 description = "Python3 X Library"
@@ -3481,6 +3523,17 @@ dev = ["pre-commit (==2.21.0)", "pre-commit (==3.2.2)", "pytest (==7.3.0)", "pyt
 docs = ["furo (==2023.3.27)", "pyenchant (==3.2.2)", "sphinx (==6.1.3)", "sphinx-autobuild (==2021.3.14)", "sphinx-tabs (==3.4.1)", "sphinxcontrib-spelling (==8.0.0)"]
 
 [[package]]
+name = "six"
+version = "1.16.0"
+description = "Python 2 and 3 compatibility utilities"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+files = [
+    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
+    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
+]
+
+[[package]]
 name = "tomli"
 version = "2.0.1"
 description = "A lil' TOML parser"
@@ -3494,4 +3547,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "a129e0b2a4c89be7728d4c63bdb5aadcc03fac5ad87ca419272f9f2067ace5b3"
+content-hash = "ec87cdda5dcf490386f72f0df1ccfd4b2794dc81769ab249b1d0c53f19fc309b"
