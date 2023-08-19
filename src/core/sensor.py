@@ -34,7 +34,7 @@ class ColorBoundary:
     upper_bound: np.array
 
 
-color_boundary = ColorBoundary("red", np.array([0, 0, 150]), np.array([255, 255, 255]))
+color_boundary = ColorBoundary("red", np.array([0, 65, 150]), np.array([255, 255, 255]))
 
 
 class NoPlayerFoundException(Exception):
@@ -140,7 +140,8 @@ def detect_player() -> (float, int):
     assert isinstance(_mask, np.ndarray)
 
     mask_player_cut = _mask[
-        properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2], properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3]
+        properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2],
+        properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3],
     ]
 
     mask_player_circle = np.ones_like(mask_player_cut) * 255

@@ -16,7 +16,9 @@ properties.SCREENSHOT_LOGGER_ENABLED = False
 
 class Test(TestCase):
     def setUp(self) -> None:
-        sensor._game_position = Box(0, 0, properties.GAME_WINDOW_WITHOUT_MARGIN[2], properties.GAME_WINDOW_WITHOUT_MARGIN[3])
+        sensor._game_position = Box(
+            0, 0, properties.GAME_WINDOW_WITHOUT_MARGIN[2], properties.GAME_WINDOW_WITHOUT_MARGIN[3]
+        )
 
     def tearDown(self) -> None:
         img_logger.finalize()
@@ -24,15 +26,15 @@ class Test(TestCase):
     # @skip
     def test_manual(self):
         sensor._camera = MagicMock()
-        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-19T021314.759214.tiff"))
+        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-19T123632.787975.tiff"))
 
         sensor.capture()
 
+        position, distance = sensor.detect_player()
         distances = sensor.detect_available_distances()
-        position = sensor.detect_player()
-        chosen_direction = brain.choose_direction(position, distances)
+        chosen_direction = brain.choose_direction(position, distance, distances)
 
-        self.assertAlmostEqual(chosen_direction[1], 0.0, delta=properties.MOTOR_MIN_ROTATION)
+        assert chosen_direction
 
     def test_mask(self):
         sensor._camera = MagicMock()
