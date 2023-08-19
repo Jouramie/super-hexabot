@@ -37,12 +37,12 @@ def start():
     def run():
         global _running
 
-        keyboard.press("left")
+        keyboard.press("f")
         time.sleep(0.5)
-        keyboard.release("left")
-        keyboard.press("right")
+        keyboard.release("f")
+        keyboard.press("g")
         time.sleep(0.5)
-        keyboard.release("right")
+        keyboard.release("g")
         time.sleep(0.2)
 
         while _running:
@@ -75,13 +75,13 @@ def loop():
 
     new_direction = None
     if rotation < -properties.MOTOR_MIN_ROTATION:
-        new_direction = "left"
+        new_direction = "f"
 
     if rotation > properties.MOTOR_MIN_ROTATION:
-        new_direction = "right"
+        new_direction = "g"
 
-    keyboard.release("left")
-    keyboard.release("right")
+    keyboard.release("f")
+    keyboard.release("g")
 
     if new_direction is not None:
         keyboard.press(new_direction)
@@ -98,7 +98,7 @@ def loop():
     te = time.perf_counter_ns()
     time_slept = (te - ts) / 1e9
     delta = time_slept * properties.MOTOR_SPEED
-    if new_direction == "left":
+    if new_direction == "f":
         delta = -delta
 
     logger.info(f"Actually turned of {delta} during {time_slept}. Expected {time_to_sleep}.")

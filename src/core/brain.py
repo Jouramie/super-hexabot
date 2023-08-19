@@ -6,7 +6,7 @@ import properties
 logger = logging.getLogger(__name__)
 
 
-def choose_direction(position: float, available_distances: list[int]) -> float:
+def choose_direction(position: float, available_distances: list[int]) -> (bool, float):
     """
 
     :param position: the position of the player from -1 to 1 where 0 is up
@@ -14,8 +14,15 @@ def choose_direction(position: float, available_distances: list[int]) -> float:
     :return: the direction where to turn to get to the ideal position to avoid the obstacles, from -1 to 1 where 1 would be a 180 degrees turn clockwise
     """
     approximated_index = (position + 1) * properties.SENSOR_RAY_AMOUNT / 2
+    round_index = round(approximated_index) % properties.SENSOR_RAY_AMOUNT
 
-    reachable = calculate_reachable(round(approximated_index), available_distances)
+    unsafe = available_distances[round_index] < properties.BRAIN_UNSAFE_SPACE
+    if unsafe:
+        safe = go_to_nearest_safe(position, round_index, available_distances)
+        if safe is not None:
+            return True, safe
+
+    reachable = calculate_reachable(round_index, available_distances)
     reachable_distances = {i: available_distances[i] for i in reachable}
     logger.info(f"Reachable directions are {reachable_distances} from {approximated_index}")
     if len(reachable) > 1:
@@ -36,7 +43,23 @@ def choose_direction(position: float, available_distances: list[int]) -> float:
     possible_turns = calculate_turns(indexes_reaching_max, position)
     selected_turn = select_best_possible_turn(possible_turns, approximated_index, reachable_available_distances)
 
-    return selected_turn
+    return False, selected_turn
+
+
+def go_to_nearest_safe(position, approximated_index, available_distances) -> None | float:
+    to_explore = zip(
+        range(approximated_index, int(approximated_index + properties.SENSOR_RAY_AMOUNT / 2)),
+        range(approximated_index - 1, int(approximated_index - properties.SENSOR_RAY_AMOUNT / 2) - 1, -1),
+    )
+    nearest_safes = [j for i in to_explore for j in i if available_distances[j % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE]
+    if not nearest_safes:
+        logger.warning(f"Ohno, found no safe space! Prepare to die...")
+        return None
+
+    nearest = nearest_safes[0]
+
+    logger.info(f"Position at {approximated_index} is unsafe. Running to {nearest}.")
+    return min(calculate_turns([nearest], position), key=lambda x: abs(x))
 
 
 def select_best_possible_turn(possible_turns, position, reachable_available_distances):
@@ -64,9 +87,9 @@ def select_best_possible_turn(possible_turns, position, reachable_available_dist
     return selected_turn
 
 
-def calculate_turns(indexes_reaching_max, position):
+def calculate_turns(possible_destinations, position):
     turns = []
-    for i in indexes_reaching_max:
+    for i in possible_destinations:
         left, right = calculate_left_and_right_turns(position, to_circle_percent(i))
         turns.append(left)
         turns.append(right)

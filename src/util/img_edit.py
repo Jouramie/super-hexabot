@@ -20,6 +20,14 @@ def draw_safe_area():
     return edit
 
 
+def draw_unsafe_area():
+    def edit(image: np.ndarray):
+        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.BRAIN_UNSAFE_SPACE, properties.SCREENSHOT_EDIT_UNSAFE_COLOR, 1)
+        return image
+
+    return edit
+
+
 def draw_player(contour):
     def edit(image: np.ndarray):
         cv2.drawContours(
@@ -57,7 +65,7 @@ def draw_rays(center, distances):
     return edit
 
 
-def draw_player_rotation(position, direction):
+def draw_player_rotation(position, direction, unsafe):
     def edit(image: np.ndarray):
 
         position_from_x_axis = (position + 1.5) % 2
@@ -68,7 +76,7 @@ def draw_player_rotation(position, direction):
             0,
             position_from_x_axis * 180,
             (position_from_x_axis + direction) * 180,
-            properties.SCREENSHOT_EDIT_PLAYER_COLOR,
+            properties.SCREENSHOT_EDIT_PLAYER_COLOR if not unsafe else properties.SCREENSHOT_EDIT_UNSAFE_COLOR,
             1,
         )
         return image

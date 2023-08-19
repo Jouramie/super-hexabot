@@ -53,11 +53,12 @@ def loop():
             raise e
         return
     available_distances = sensor.detect_available_distances()
-    direction = brain.choose_direction(position, available_distances)
+    unsafe, direction = brain.choose_direction(position, available_distances)
     motor.turn(direction)
 
-    img_logger.edit(img_edit.draw_player_rotation(position, direction))
+    img_logger.edit(img_edit.draw_player_rotation(position, direction, unsafe))
     img_logger.edit(img_edit.draw_safe_area())
+    img_logger.edit(img_edit.draw_unsafe_area())
 
     sensor.clear()
 
