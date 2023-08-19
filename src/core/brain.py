@@ -69,28 +69,30 @@ def go_to_nearest_safe(position, approximated_index, player_distance, available_
     wall_left = False
     wall_right = False
     for i in range(0, properties.SENSOR_RAY_AMOUNT):
-        if (
-            available_distances[(approximated_index + i) % properties.SENSOR_RAY_AMOUNT]
+        if all(
+            available_distances[(approximated_index + i + j) % properties.SENSOR_RAY_AMOUNT]
             == properties.SENSOR_IMPOSSIBLE_WALL
+            for j in range(properties.BRAIN_REQUIRED_WALL)
         ):
             wall_right = True
-        if (
-            available_distances[(approximated_index - i) % properties.SENSOR_RAY_AMOUNT]
+        if all(
+            available_distances[(approximated_index - i - j) % properties.SENSOR_RAY_AMOUNT]
             == properties.SENSOR_IMPOSSIBLE_WALL
+            for j in range(properties.BRAIN_REQUIRED_WALL)
         ):
             wall_left = True
 
         if not wall_right and all(
             available_distances[(approximated_index + i + j) % properties.SENSOR_RAY_AMOUNT]
             > player_distance + properties.BRAIN_UNSAFE_SPACE_OFFSET + properties.BRAIN_SAFE_MARGIN
-            for j in range(0, properties.BRAIN_REQUIRED_SAFE_SPACE)
+            for j in range(properties.BRAIN_REQUIRED_SAFE_SPACE)
         ):
             return calculate_right_turn(position, to_circle_percent(approximated_index + i))
 
         if not wall_left and all(
             available_distances[(approximated_index - i - j) % properties.SENSOR_RAY_AMOUNT]
             > player_distance + properties.BRAIN_UNSAFE_SPACE_OFFSET + properties.BRAIN_SAFE_MARGIN
-            for j in range(0, properties.BRAIN_REQUIRED_SAFE_SPACE)
+            for j in range(properties.BRAIN_REQUIRED_SAFE_SPACE)
         ):
             return calculate_left_turn(position, to_circle_percent(approximated_index - i))
 
