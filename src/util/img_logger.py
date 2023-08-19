@@ -42,7 +42,10 @@ def log_next_image():
         saved_screenshots = os.listdir(properties.SCREENSHOT_LOGGER_LOGS_PATH)
 
         if len(saved_screenshots) > properties.SCREENSHOT_LOGGER_ROLLING_IMAGE_AMOUNT:
-            os.remove(Path(f"{properties.SCREENSHOT_LOGGER_LOGS_PATH}/{sorted(saved_screenshots)[0]}"))
+            try:
+                os.remove(Path(f"{properties.SCREENSHOT_LOGGER_LOGS_PATH}/{sorted(saved_screenshots)[0]}"))
+            except PermissionError:
+                logger.warning(f"Could not delete {name}.")
 
 
 def push_image_to_buffer(name, image):
