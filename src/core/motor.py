@@ -33,6 +33,9 @@ def turn(rotation: float):
 
 def start():
     global _thread
+    keyboard.press("space")
+    time.sleep(0.15)
+    keyboard.release("space")
 
     def run():
         global _running
@@ -49,10 +52,6 @@ def start():
             loop()
 
     _thread = threading.Thread(target=run, daemon=True)
-
-    keyboard.press("space")
-    time.sleep(0.05)
-    keyboard.release("space")
     _thread.start()
 
 
@@ -83,12 +82,19 @@ def loop():
     keyboard.release("f")
     keyboard.release("g")
 
-    if new_direction is not None:
-        keyboard.press(new_direction)
+    if new_direction is None:
+        ts = time.perf_counter_ns()
+        time.sleep(properties.MOTOR_MAX_SLEEP)
+        te = time.perf_counter_ns()
+        time_slept = (te - ts) / 1e9
+        logger.info(f"  Not turning, slept for {time_slept}. Expected {properties.MOTOR_MAX_SLEEP}.")
+        return
+
+    keyboard.press(new_direction)
     _last_direction = new_direction
 
     time_to_sleep = abs(rotation) / properties.MOTOR_SPEED
-    logger.info(f"Turning {new_direction} for {rotation} during {time_to_sleep}.")
+    logger.info(f"  Turning {new_direction} for {rotation} during {time_to_sleep}.")
     if time_to_sleep > properties.MOTOR_MAX_SLEEP or time_to_sleep == 0:
         time_to_sleep = properties.MOTOR_MAX_SLEEP
 
@@ -101,7 +107,7 @@ def loop():
     if new_direction == "f":
         delta = -delta
 
-    logger.info(f"Actually turned of {delta} during {time_slept}. Expected {time_to_sleep}.")
+    logger.info(f"  Actually turned of {delta} during {time_slept}. Expected {time_to_sleep}.")
     if current_destination_timestamp == _destination_timestamp:
         with _lock:
             _destination = rotation - delta

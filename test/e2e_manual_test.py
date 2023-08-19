@@ -24,7 +24,7 @@ class Test(TestCase):
     # @skip
     def test_manual(self):
         sensor._camera = MagicMock()
-        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-17T215316.369675.tiff"))
+        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-18T235051.318498.tiff"))
 
         sensor.capture()
 
@@ -32,4 +32,4 @@ class Test(TestCase):
         position = sensor.detect_player()
         chosen_direction = brain.choose_direction(position, distances)
 
-        self.assertAlmostEqual(chosen_direction, 0.0, delta=properties.MOTOR_MIN_ROTATION)
+        self.assertAlmostEqual(chosen_direction[1], 0.0, delta=properties.MOTOR_MIN_ROTATION)

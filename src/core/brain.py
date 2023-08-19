@@ -51,7 +51,22 @@ def go_to_nearest_safe(position, approximated_index, available_distances) -> Non
         range(approximated_index, int(approximated_index + properties.SENSOR_RAY_AMOUNT / 2)),
         range(approximated_index - 1, int(approximated_index - properties.SENSOR_RAY_AMOUNT / 2) - 1, -1),
     )
-    nearest_safes = [j for i in to_explore for j in i if available_distances[j % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE]
+    nearest_safes = [
+        j
+        for i in to_explore
+        for j in i
+        if available_distances[j % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+        and (
+            (
+                available_distances[(j + 1) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+                and available_distances[(j + 2) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+            )
+            or (
+                available_distances[(j - 1) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+                and available_distances[(j - 2) % properties.SENSOR_RAY_AMOUNT] > properties.BRAIN_UNSAFE_SPACE
+            )
+        )
+    ]
     if not nearest_safes:
         logger.warning(f"Ohno, found no safe space! Prepare to die...")
         return None

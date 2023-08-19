@@ -61,7 +61,9 @@ def submit(image):
     if not properties.SCREENSHOT_LOGGER_ENABLED:
         return
 
-    _image = image
+    name = f"{datetime.now().replace().isoformat().replace(':', '')}.tiff"
+    logger.info(f"Submit {name} to log buffer.")
+    _image = name, image
 
 
 def edit(edit_func):
@@ -69,7 +71,7 @@ def edit(edit_func):
     if not properties.SCREENSHOT_LOGGER_ENABLED or not properties.SCREENSHOT_LOGGER_EDIT_ENABLED or _image is None:
         return
 
-    _image = edit_func(_image)
+    _image = _image[0], edit_func(_image[1])
 
 
 def publish():
@@ -79,10 +81,10 @@ def publish():
 
     name = properties.SCREENSHOT_LOGGER_IMAGE_NAME
     if name is None:
-        name = f"{datetime.now().replace().isoformat().replace(':', '')}.tiff"
+        name = _image[0]
 
     logger.debug(f"Pushing image {name} to log buffer.")
-    push_image_to_buffer(name, _image)
+    push_image_to_buffer(name, _image[1])
 
     _image = None
 

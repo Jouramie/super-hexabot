@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import timedelta
 from pathlib import Path
 
 import properties
@@ -63,12 +64,29 @@ def loop():
     sensor.clear()
 
 
+class ElapsedFormatter:
+    def __init__(self):
+        self.start_time = time.time()
+
+    def format(self, record):
+        elapsed_seconds = record.created - self.start_time
+        # using timedelta here for convenient default formatting
+        elapsed = timedelta(seconds=elapsed_seconds)
+        return "{} {}".format(elapsed, record.getMessage())
+
+    def start(self):
+        self.start_time = time.time()
+
+
 if __name__ == "__main__":
     logs_folder = Path("logs")
     if not logs_folder.exists():
         logs_folder.mkdir()
 
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", handlers=[logging.FileHandler("logs/super-hexabot.log", mode="w")])
+    handler = logging.FileHandler("logs/super-hexabot.log", mode="w")
+    formatter = ElapsedFormatter()
+    handler.setFormatter(formatter)
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s", handlers=[handler])
     logger = logging.getLogger(__name__)
 
     sensor.calibrate()
@@ -82,6 +100,7 @@ if __name__ == "__main__":
     print("Start !")
     try:
         motor.start()
+        formatter.start()
 
         time.sleep(1)
         calculate_speed()
