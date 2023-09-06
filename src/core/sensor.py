@@ -139,25 +139,11 @@ def detect_player() -> (float, int):
 
     assert isinstance(_mask, np.ndarray)
 
-    mask_player_cut = _mask[
-        properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2],
-        properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3],
-    ]
-
-    mask_player_circle = np.ones_like(mask_player_cut) * 255
-    mask_player_circle = cv2.circle(
-        mask_player_circle,
-        (properties.EXPECTED_PLAYER_AREA_RADIUS, properties.EXPECTED_PLAYER_AREA_RADIUS),
-        properties.EXPECTED_PLAYER_AREA_RADIUS,
-        (0, 0, 0),
-        cv2.FILLED,
-    )
-    mask_player_cut = cv2.subtract(mask_player_cut, mask_player_circle)
+    mask_player_cut = crop_circle_center(_mask)
 
     img_logger.edit(img_edit.draw_player_area())
 
-    cnts = cv2.findContours(mask_player_cut, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+    cnts = find_all_contours(mask_player_cut)
 
     image_number = 0
     pos = []
@@ -167,10 +153,11 @@ def detect_player() -> (float, int):
         # log_screenshot(debug)
         if len(approx) == 3 and properties.PLAYER_MIN_SIZE < area < properties.PLAYER_MAX_SIZE:
             image_number += 1
-            moments = cv2.moments(approx)
-            cx = int(moments["m10"] / moments["m00"])
-            cy = int(moments["m01"] / moments["m00"])
-            pos.append(np.array([cy + properties.EXPECTED_PLAYER_AREA[0], cx + properties.EXPECTED_PLAYER_AREA[1]]))
+            centroid = compute_centroid(approx)
+            pos.append(
+                np.array([centroid[1], centroid[0]])
+                + np.array([properties.EXPECTED_PLAYER_AREA[0], properties.EXPECTED_PLAYER_AREA[1]])
+            )
 
             img_logger.edit(img_edit.draw_player(c))
 
@@ -184,6 +171,35 @@ def detect_player() -> (float, int):
     _player_distance = int(np.linalg.norm(from_center))
     angle = np.angle(from_center[0] + from_center[1] * 1j) / np.pi
     return 1 - angle if angle > 0 else -1 - angle, _player_distance
+
+
+def compute_centroid(contour):
+    moments = cv2.moments(contour)
+    cx = int(moments["m10"] / moments["m00"])
+    cy = int(moments["m01"] / moments["m00"])
+    return np.array([cx, cy])
+
+
+def find_all_contours(mask_player_cut):
+    cnts = cv2.findContours(mask_player_cut, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    return cnts[0] if len(cnts) == 2 else cnts[1]
+
+
+def crop_circle_center(_mask):
+    mask_player_cut = _mask[
+        properties.EXPECTED_PLAYER_AREA[0] : properties.EXPECTED_PLAYER_AREA[2],
+        properties.EXPECTED_PLAYER_AREA[1] : properties.EXPECTED_PLAYER_AREA[3],
+    ]
+    mask_player_circle = np.ones_like(mask_player_cut) * 255
+    mask_player_circle = cv2.circle(
+        mask_player_circle,
+        (properties.EXPECTED_PLAYER_AREA_RADIUS, properties.EXPECTED_PLAYER_AREA_RADIUS),
+        properties.EXPECTED_PLAYER_AREA_RADIUS,
+        (0, 0, 0),
+        cv2.FILLED,
+    )
+    mask_player_cut = cv2.subtract(mask_player_cut, mask_player_circle)
+    return mask_player_cut
 
 
 @timeit(name="walls", print_each_call=True)

@@ -54,11 +54,6 @@ def push_image_to_buffer(name, image):
         _buffer.append((name, image))
 
 
-if _running:
-    _process = threading.Thread(target=log_next_image)
-    _process.start()
-
-
 def submit(image):
     global _image
     if not properties.SCREENSHOT_LOGGER_ENABLED:
@@ -95,6 +90,12 @@ def publish():
 def log_now(image, name=None):
     image = PIL.Image.fromarray(image)
     image.save(Path(f"{properties.SCREENSHOT_LOGGER_LOGS_PATH}/{name}"))
+
+
+def start():
+    global _running
+    thread = threading.Thread(target=log_next_image)
+    thread.start()
 
 
 def finalize():

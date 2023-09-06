@@ -6,7 +6,13 @@ import properties
 
 def draw_player_area():
     def edit(image: np.ndarray):
-        cv2.circle(image, properties.EXPECTED_CENTER[::-1], properties.EXPECTED_PLAYER_AREA_RADIUS, properties.SCREENSHOT_EDIT_RAYS_COLOR, 1)
+        cv2.circle(
+            image,
+            properties.EXPECTED_CENTER[::-1],
+            properties.EXPECTED_PLAYER_AREA_RADIUS,
+            properties.SCREENSHOT_EDIT_RAYS_COLOR,
+            1,
+        )
         return image
 
     return edit
@@ -14,7 +20,13 @@ def draw_player_area():
 
 def draw_safe_area(distance):
     def edit(image: np.ndarray):
-        cv2.circle(image, properties.EXPECTED_CENTER[::-1], distance + properties.BRAIN_MINIMAL_SPACE_OFFSET, properties.SCREENSHOT_EDIT_PLAYER_COLOR, 1)
+        cv2.circle(
+            image,
+            properties.EXPECTED_CENTER[::-1],
+            distance + properties.BRAIN_MINIMAL_SPACE_OFFSET,
+            properties.SCREENSHOT_EDIT_PLAYER_COLOR,
+            1,
+        )
         return image
 
     return edit
@@ -22,7 +34,13 @@ def draw_safe_area(distance):
 
 def draw_unsafe_area(distance):
     def edit(image: np.ndarray):
-        cv2.circle(image, properties.EXPECTED_CENTER[::-1], distance + properties.BRAIN_UNSAFE_SPACE_OFFSET, properties.SCREENSHOT_EDIT_UNSAFE_COLOR, 1)
+        cv2.circle(
+            image,
+            properties.EXPECTED_CENTER[::-1],
+            distance + properties.BRAIN_UNSAFE_SPACE_OFFSET,
+            properties.SCREENSHOT_EDIT_UNSAFE_COLOR,
+            1,
+        )
         cv2.circle(
             image,
             properties.EXPECTED_CENTER[::-1],
@@ -36,9 +54,20 @@ def draw_unsafe_area(distance):
 
 
 def draw_player(contour):
+    return draw_contours(
+        [contour + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]],
+        properties.SCREENSHOT_EDIT_PLAYER_COLOR,
+    )
+
+
+def draw_contours(contours, color):
     def edit(image: np.ndarray):
         cv2.drawContours(
-            image, [contour + [properties.EXPECTED_PLAYER_AREA[1], properties.EXPECTED_PLAYER_AREA[0]]], 0, properties.SCREENSHOT_EDIT_PLAYER_COLOR, 1
+            image,
+            contours,
+            0,
+            color,
+            1,
         )
         return image
 
@@ -51,8 +80,12 @@ def draw_rays(center, ray_start_i, distances):
             ray_start = center + np.int_(
                 np.array(
                     [
-                        ray_start_i * properties.SENSOR_RAY_PIXEL_SKIP * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
-                        -ray_start_i * properties.SENSOR_RAY_PIXEL_SKIP * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                        ray_start_i
+                        * properties.SENSOR_RAY_PIXEL_SKIP
+                        * np.cos(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
+                        -ray_start_i
+                        * properties.SENSOR_RAY_PIXEL_SKIP
+                        * np.sin(ray * 2 * np.pi / properties.SENSOR_RAY_AMOUNT),
                     ]
                 )
             )

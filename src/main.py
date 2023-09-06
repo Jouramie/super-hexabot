@@ -67,6 +67,7 @@ if __name__ == "__main__":
     time.sleep(1)
     print("Start !")
     try:
+        img_logger.start()
         motor.start()
         formatter.start()
 

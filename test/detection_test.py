@@ -20,9 +20,11 @@ class BaseDetectionTest(TestCase):
             0, 0, properties.GAME_WINDOW_WITHOUT_MARGIN[2], properties.GAME_WINDOW_WITHOUT_MARGIN[3]
         )
         sensor._camera = MagicMock()
+        # img_logger.start()
 
     def tearDown(self) -> None:
-        img_logger.finalize()
+        # img_logger.finalize()
+        pass
 
     def test_detection(self):
         if self.path is None:

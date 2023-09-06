@@ -26,7 +26,7 @@ class Test(TestCase):
     # @skip
     def test_manual(self):
         sensor._camera = MagicMock()
-        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-19T123632.787975.tiff"))
+        sensor._camera.get_latest_frame.return_value = np.array(Image.open("logs/2023-08-18T190558.509657.tiff"))
 
         sensor.capture()
 
